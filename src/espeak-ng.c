@@ -555,9 +555,9 @@ int main(int argc, char **argv)
 			espeak_ng_ERROR_CONTEXT context = NULL;
 			espeak_ng_STATUS result;
 			if (optarg2) {
-				result = espeak_ng_CompilePhonemeDataPath(22050, optarg2, NULL, stdout, &context);
+				result = espeak_ng_CompilePhonemeDataPath(8000, optarg2, NULL, stdout, &context);
 			} else {
-				result = espeak_ng_CompilePhonemeData(22050, stdout, &context);
+				result = espeak_ng_CompilePhonemeData(8000, stdout, &context);
 			}
 			if (result != ENS_OK) {
 				espeak_ng_PrintStatusCodeMessage(result, stderr, context);

@@ -174,15 +174,20 @@ void dump_espeak_VOICE(espeak_VOICE *voice) {
     printf("variant: %d", voice->variant);
 }
 
+/*
+Some notes:
+
+- phoneme tables need to be compiled. Original espeak-ng was patched to produce phonemes at 8000 Hz.
+  This requires `sox` to be installed (it is available as an ubuntu package)
+*/
 int main(int argc, char **argv) {
     espeak_VOICE voice_select;
 
-    printf("hello world!\n");
 	espeak_ng_InitializePath("/usr/local/share/espeak-ng-data");
 	espeak_ng_ERROR_CONTEXT context = NULL;
 
 	int param;
-	int srate = 22050; // default sample rate 22050 Hz -- looks like a small "project" to modify to 8000Hz
+	int srate = 8000; // default sample rate 22050 Hz -- looks like a small "project" to modify to 8000Hz
 
 	// It seems that the wctype functions don't work until the locale has been set
 	// to something other than the default "C".  Then, not only Latin1 but also the
@@ -220,7 +225,7 @@ int main(int argc, char **argv) {
 	option_phonemes = 0;
 	option_phoneme_events = 0;
 
-    dump_param_stack();
+    // dump_param_stack();
 	if (result != ENS_OK) {
 		espeak_ng_PrintStatusCodeMessage(result, stderr, context);
 		espeak_ng_ClearErrorContext(&context);
@@ -268,7 +273,6 @@ int main(int argc, char **argv) {
     size = strlen(p_text);
     espeak_Synth(p_text, size+1, 0, POS_CHARACTER, 0, synth_flags, NULL, NULL);
 
-    printf("goodbye world!\n");
 	espeak_ng_Synchronize();
 	CloseWavFile();
 	espeak_ng_Terminate();
