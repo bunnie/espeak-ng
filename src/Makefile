@@ -48,7 +48,7 @@ OUTFILES := $(BUILDDIR)/$(PROJECT).a \
             $(BUILDDIR)/$(PROJECT).list
 OBJDIR    := $(BUILDDIR)/obj
 LSTDIR    := $(BUILDDIR)/lst
-INCDIR = include/compat include/espeak include/espeak-ng ucd-tools/src/include ../
+INCDIR = include/compat include/espeak include/espeak-ng ucd-tools/src/include ../ libespeak-ng
 
 # build the object lists to compile
 COBJS    := $(addprefix $(OBJDIR)/, $(notdir $(CSRC:.c=.o)))
@@ -92,8 +92,8 @@ COPT = -O2 -ggdb -fomit-frame-pointer -falign-functions=16 -fstack-protector -fl
 # collate all flags
 CFLAGS    = $(MCFLAGS) $(COPT) $(CWARN) -Wa,-alms=$(LSTDIR)/$(notdir $(<:.c=.lst)) $(DEFS)
 
-# rule to make .o's
-$(COBJS) : $(OBJDIR)/%.o : %.c Makefile
+# rule to make .o's # Makefile
+$(COBJS) : $(OBJDIR)/%.o : %.c
 ifeq ($(USE_VERBOSE_COMPILE),yes)
 	@echo
 	$(CC) -c $(CFLAGS) $(TOPT) -I. $(IINCDIR) $< -o $@
@@ -136,3 +136,7 @@ endif
 
 OUTFILES := $(BUILDDIR)/$(PROJECT).a
 
+# test program
+test: test.c $(BUILDDIR)/$(PROJECT).a
+	$(CC) -c $(CFLAGS) $(TOPT) -I. $(IINCDIR) -o test.o test.c
+	$(LD) test.o -L./$(BUILDDIR) -lespeak -lm -o test
