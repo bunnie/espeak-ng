@@ -163,6 +163,6 @@ test: test.c ffi.c $(BUILDDIR)/$(PROJECT).a $(PHONEMES) $(PHONEME_HEADERS)
 	$(CC) -c $(CFLAGS) $(TOPT) -I. $(IINCDIR) -o ffi.o ffi.c
 	$(LD) test.o ffi.o -L./$(BUILDDIR) -lespeak -lm -o test
 
-ffi: ffi.c $(OBJS) $(LDSCRIPT) $(PHONEMES) $(PHONEME_HEADERS)
+ffi.a: ffi.c $(OBJS) $(LDSCRIPT) $(PHONEMES) $(PHONEME_HEADERS)
 	$(CC) -c $(CFLAGS) $(TOPT) -I. $(IINCDIR) -o ffi.o ffi.c
-	@$(AR) rvs $@ $(OBJS) $(LDFLAGS)
+	@$(AR) rvs $@ $(OBJS) $(LDFLAGS) ffi.o
