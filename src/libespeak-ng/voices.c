@@ -178,14 +178,51 @@ const char *variant_lists[3] = { variants_either, variants_male, variants_female
 static voice_t voicedata;
 voice_t *voice = &voicedata;
 
+#define NORMAL_MODE 0
+
+static char en_voice[] = "\
+name English (Great Britain)\n\
+language en-gb  2\n\
+language en 2\n\
+\n\
+maintainer Reece H. Dunn <msclrhd@gmail.com>\n\
+status mature\n\
+\n\
+tunes s1 c1 q1 e1\n";
+
+static char *fgets_string(char *buf, int size) {
+	static long unsigned int pos = 0;
+	int num = 0;
+	if (pos >= strlen(en_voice)) {
+		return NULL;
+	}
+	//printf("%d\n", pos);
+	//fflush(stdout);
+	while ((num < (size - 1)) && (pos < strlen(en_voice))) {
+		buf[num] = en_voice[pos];
+		pos += 1;
+		if ((buf[num] == '\n') || (buf[num] == '\r')) {
+			break;
+		}
+		num += 1;
+	}
+	buf[num+1] = '\0';
+	return buf;
+}
+
 static char *fgets_strip(char *buf, int size, FILE *f_in)
 {
 	// strip trailing spaces, and truncate lines at // comment
 	int len;
 	char *p;
-
+#if NORMAL_MODE
 	if (fgets(buf, size, f_in) == NULL)
 		return NULL;
+#else
+	if (fgets_string(buf, size) == NULL)
+		return NULL;
+#endif
+	//printf("fgets: %s\n", buf);
 
 	if (buf[0] == '#') {
 		buf[0] = 0;
@@ -557,7 +594,9 @@ voice_t *LoadVoice(const char *vname, int control)
 	static char voice_name[40];       // voice name for current_voice_selected
 	static char voice_languages[100]; // list of languages and priorities for current_voice_selected
 
+#if NORMAL_MODE
 	strncpy0(voicename, vname, sizeof(voicename));
+	#if 0
 	if (control & 0x10) {
 		strcpy(buf, vname);
 		if (GetFileLength(buf) <= 0)
@@ -574,13 +613,16 @@ voice_t *LoadVoice(const char *vname, int control)
 			sprintf(buf, "%s%s", path_voices, voicename); // look in the main languages directory
 		}
 	}
+	#endif
 
+	strcpy(buf, "/usr/local/share/espeak-ng-data/lang/gmw/en");
+	printf("opening voice %s\n", buf);
 	f_voice = fopen(buf, "r");
 
-        if (!(control & 8)/*compiling phonemes*/)
-            language_type = ESPEAKNG_DEFAULT_VOICE; // default
-        else
-            language_type = "";
+	if (!(control & 8)/*compiling phonemes*/)
+		language_type = ESPEAKNG_DEFAULT_VOICE; // default
+	else
+		language_type = "";
 
 	if (f_voice == NULL) {
 		if (control & 3)
@@ -589,15 +631,13 @@ voice_t *LoadVoice(const char *vname, int control)
 		if (SelectPhonemeTableName(voicename) >= 0)
 			language_type = voicename;
 	}
-
+	printf("language_type: %s\n", language_type);
 	if (!tone_only && (translator != NULL)) {
 		DeleteTranslator(translator);
 		translator = NULL;
 	}
-
 	strcpy(translator_name, language_type);
 	strcpy(new_dictionary, language_type);
-
 	if (!tone_only) {
 		voice = &voicedata;
 		strncpy0(voice_identifier, vname, sizeof(voice_identifier));
@@ -614,17 +654,45 @@ voice_t *LoadVoice(const char *vname, int control)
 		sprintf(buf, "+%s", &vname[3]);    // omit  !v/  from the variant filename
 		strcat(voice_identifier, buf);
 	}
+
+#else
+	tone_only = false;
+	printf("bypass mode: '%s', %x\n", vname, control);
+	strncpy0(voicename, "en", sizeof(voicename));
+    language_type = "en";
+	strcpy(translator_name, language_type);
+	strcpy(new_dictionary, language_type);
+	strcpy(phonemes_name, language_type);
+	strcpy(voice_identifier, language_type);
+	SelectPhonemeTableName("en");
+	language_set = false;
+	printf("bypass mode preamble done\n");
+
+	if (translator != NULL) {
+		printf("tone_only: %d, translator: %s\n", tone_only, translator);
+	} else {
+		printf("tone_only: %d, translator: NULL\n", tone_only);
+	}
+	fflush(stdout);
+#endif
 	VoiceReset(tone_only);
 
+#if NORMAL_MODE
 	while ((f_voice != NULL) && (fgets_strip(buf, sizeof(buf), f_voice) != NULL)) {
+#else
+	while (fgets_strip(buf, sizeof(buf), f_voice) != NULL) {
+#endif
+		//printf("buf: %s\n", buf);
+		//fflush(stdout);
 		// isolate the attribute name
 		for (p = buf; (*p != 0) && !isspace(*p); p++) ;
 		*p++ = 0;
 
 		if (buf[0] == 0) continue;
 
+		//printf("buf->key: %s\n", buf);
 		key = LookupMnem(keyword_tab, buf);
-
+		//printf("key: %d\n", key);
 		switch (key)
 		{
 		case V_LANGUAGE:
@@ -632,15 +700,19 @@ voice_t *LoadVoice(const char *vname, int control)
 			unsigned int len;
 			int priority;
 
-			if (tone_only)
+			if (tone_only) {
+				printf("tone only set, not setting language\n");
 				break;
+			}
 
 			priority = DEFAULT_LANGUAGE_PRIORITY;
 			language_name[0] = 0;
 
 			sscanf(p, "%s %d", language_name, &priority);
-			if (strcmp(language_name, "variant") == 0)
+			if (strcmp(language_name, "variant") == 0) {
+				printf("language name is variant, not setting translator\n");
 				break;
+			}
 
 			len = strlen(language_name) + 2;
 			// check for space in languages[]
@@ -659,9 +731,11 @@ voice_t *LoadVoice(const char *vname, int control)
 				strcpy(new_dictionary, language_type);
 				strcpy(phonemes_name, language_type);
 				SelectPhonemeTableName(phonemes_name);
-
+				printf("selecting translator: %s\n", translator_name);
 				translator = SelectTranslator(translator_name);
 				strncpy0(voice->language_name, language_name, sizeof(voice->language_name));
+			} else {
+				printf("language_set is true, skipping language setting\n");
 			}
 		}
 			break;
@@ -1483,6 +1557,7 @@ static void GetVoices(const char *path, int len_path_voices, int is_language_fil
 			continue;
 
 		sprintf(fname, "%s%c%s", path, PATHSEP, ent->d_name);
+		printf("GetVoices: %sd\n", fname);
 
 		ftype = GetFileLength(fname);
 
@@ -1543,6 +1618,22 @@ ESPEAK_NG_API espeak_ng_STATUS espeak_ng_SetVoiceByFile(const char *filename)
 
 	return ENS_VOICE_NOT_FOUND;
 }
+ESPEAK_NG_API espeak_ng_STATUS SetVoiceMinimal(void) {
+	printf("minimal set voice\n");
+	char variant_name[] = "en";
+	espeak_VOICE voice_selector;
+
+	memset(&voice_selector, 0, sizeof(voice_selector));
+	voice_selector.name = "gmw/en";
+	LoadVoice("/usr/local/share/espeak-ng-data/lang/gmw/en", 2);
+
+	DoVoiceChange(voice);
+	voice_selector.languages = voice->language_name;
+	SetVoiceStack(&voice_selector, variant_name);
+	printf("returning OK\n");
+	return ENS_OK;
+}
+
 
 ESPEAK_NG_API espeak_ng_STATUS espeak_ng_SetVoiceByName(const char *name)
 {
@@ -1555,6 +1646,7 @@ ESPEAK_NG_API espeak_ng_STATUS espeak_ng_SetVoiceByName(const char *name)
 	strncpy0(buf, name, sizeof(buf));
 
 	variant_name = ExtractVoiceVariantName(buf, 0, 1);
+	printf("variant name: %s\n", buf);
 
 	for (ix = 0;; ix++) {
 		// convert voice name to lower case  (ascii)
@@ -1569,6 +1661,7 @@ ESPEAK_NG_API espeak_ng_STATUS espeak_ng_SetVoiceByName(const char *name)
 	// This may avoid the need to call espeak_ListVoices().
 
 	if (LoadVoice(buf, 1) != NULL) {
+		printf("Loaded voice: %s\n", buf);
 		if (variant_name[0] != 0)
 			LoadVoice(variant_name, 2);
 
@@ -1578,10 +1671,13 @@ ESPEAK_NG_API espeak_ng_STATUS espeak_ng_SetVoiceByName(const char *name)
 		return ENS_OK;
 	}
 
-	if (n_voices_list == 0)
+	if (n_voices_list == 0) {
+		printf("creating voice list\n");
 		espeak_ListVoices(NULL); // create the voices list
+	}
 
 	if ((v = SelectVoiceByName(voices_list, buf)) != NULL) {
+		printf("Loading voice v->ident %s\n", v->identifier);
 		if (LoadVoice(v->identifier, 0) != NULL) {
 			if (variant_name[0] != 0)
 				LoadVoice(variant_name, 2);

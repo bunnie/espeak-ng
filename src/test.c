@@ -24,6 +24,8 @@
 #include <synthesize.h>
 #include <synthdata.h>
 
+#include "ffi.h"
+
 int samplerate;
 bool quiet = false;
 unsigned int samples_total = 0;
@@ -31,6 +33,7 @@ unsigned int samples_split = 0;
 unsigned int samples_split_seconds = 0;
 unsigned int wavefile_count = 0;
 
+/*
 extern int saved_parameters[N_SPEECH_PARAM]; // Parameters saved on synthesis start
 const int ffi_param_defaults[N_SPEECH_PARAM] = {
 	0,   // silence (internal use)
@@ -48,7 +51,7 @@ const int ffi_param_defaults[N_SPEECH_PARAM] = {
 	0,   // emphasis
 	0,   // line length
 	0,   // voice type
-};
+};*/
 
 FILE *f_wavfile = NULL;
 void testWrite4Bytes(FILE *f, int value)
@@ -124,20 +127,26 @@ static int SynthCallback(short *wav, int numsamples, espeak_EVENT *events)
 {
 	while (events->type != 0) {
 		if (events->type == espeakEVENT_SAMPLERATE) {
+            printf("EVENT: setting synth samplerate to %d\n", events->id.number);
 			samplerate = events->id.number;
 			samples_split = samples_split_seconds * samplerate;
 		} else if (events->type == espeakEVENT_SENTENCE) {
+            printf("EVENT: got to end of sentence\n");
 			// start a new WAV file when the limit is reached, at this sentence boundary
 			if ((samples_split > 0) && (samples_total > samples_split)) {
+                printf("EVENT: closing wav file due to end of sentence\n");
 				CloseWavFile();
 				samples_total = 0;
 				wavefile_count++;
 			}
-		}
+		} else {
+            printf("EVENT: ignored %d\n", events->type);
+        }
 		events++;
 	}
 
 	if (f_wavfile == NULL) {
+        printf("wavfile was null, opening test1.wav\n");
 		if (samples_split > 0) {
 			if (OpenWavFile("test1.wav", samplerate) != 0)
 				return 1;
@@ -152,7 +161,7 @@ static int SynthCallback(short *wav, int numsamples, espeak_EVENT *events)
 	return 0;
 }
 
-
+/*
 void dump_param_stack(void) {
     int i, j;
     for (i = 0; i < N_PARAM_STACK; i++) {
@@ -172,108 +181,49 @@ void dump_espeak_VOICE(espeak_VOICE *voice) {
     printf("gender: %d", voice->gender);
     printf("age: %d", voice->age);
     printf("variant: %d", voice->variant);
-}
+}*/
 
 /*
 Some notes:
 
 - phoneme tables need to be compiled. Original espeak-ng was patched to produce phonemes at 8000 Hz.
   This requires `sox` to be installed (it is available as an ubuntu package)
+- voice needs loading. this is done by patching voices.c to skip searching for the entire voices directory,
+  and then setting up translator/language using a hard-code english dictionary. This routine is a little
+  tricky to patch because it is called on multiple occassions redundantly for different purposes (such as
+  listing all the voices, versus just loading one of them) and then patching the loading routine itself is
+  a dance between the effectiver lexer and the assumptions of the loaded data.
+- a "dictionary" needs to be loaded. This is a a file pulled in within dictionary.c, and we're able to
+  patch it with en_dict.h by bodging over the LoadDictionary() API call plus removing the corresponding free() calls
+  that would improperly attemp to free up hard-coded/static data.
+- next tasks:
+   - in addition to creating the WAV file, copy the data into a buffer and confirm its output
+   - create a core FFI from these simplifications
+   - convert to a build.rs script that can pull in all the files
+   - try to link it in as an FFI in Xous.
 */
 int main(int argc, char **argv) {
-    espeak_VOICE voice_select;
+    // test the simplified API
+    espeak_ffi_setup(SynthCallback);
 
-	espeak_ng_InitializePath("/usr/local/share/espeak-ng-data");
-	espeak_ng_ERROR_CONTEXT context = NULL;
-
-	int param;
-	int srate = 8000; // default sample rate 22050 Hz -- looks like a small "project" to modify to 8000Hz
-
-	// It seems that the wctype functions don't work until the locale has been set
-	// to something other than the default "C".  Then, not only Latin1 but also the
-	// other characters give the correct results with iswalpha() etc.
-    setlocale(LC_CTYPE, "");
-
-	espeak_ng_STATUS result = LoadPhData(&srate, context);
-	if (result != ENS_OK) {
-        printf("couldn't load phoneme data");
-		exit(0);
-    }
-
-	WavegenInit(srate, 0);
-	LoadConfig();
-
-    // setup parameters
-	memset(&current_voice_selected, 0, sizeof(current_voice_selected));
-	SetVoiceStack(NULL, "");
-	SynthesizeInit();
-	InitNamedata();
-
-	VoiceReset(0);
-
-	for (param = 0; param < N_SPEECH_PARAM; param++)
-		param_stack[0].parameter[param] = saved_parameters[param] = ffi_param_defaults[param];
-
-	SetParameter(espeakRATE, espeakRATE_NORMAL, 0);
-	SetParameter(espeakVOLUME, 100, 0);
-	SetParameter(espeakCAPITALS, option_capitals, 0);
-	SetParameter(espeakPUNCTUATION, option_punctuation, 0);
-	SetParameter(espeakWORDGAP, 0, 0);
-
-	// fifo_init();
-
-	option_phonemes = 0;
-	option_phoneme_events = 0;
-
-    // dump_param_stack();
-	if (result != ENS_OK) {
-		espeak_ng_PrintStatusCodeMessage(result, stderr, context);
-		espeak_ng_ClearErrorContext(&context);
-		exit(1);
-	}
-
-    // setup output stream
-    result = espeak_ng_InitializeOutput(0x0001, 0, NULL);
-    // PLAYBACK_MODE -> ENOUTPUT_MODE_SPEAK_AUDIO -> 0x0002
-    // FILE -> ENOUTPUT_MODE_SYNCHRONOUS -> 0x0001
+    // some setup for the wav output
     samplerate = espeak_ng_GetSampleRate();
     printf("sample rate: %d\n", samplerate);
     samples_split = 0;
     samples_split_seconds = 30 * 60;
     samples_split = samplerate * samples_split_seconds;
-    espeak_SetSynthCallback(SynthCallback);
+    // done with wav output setup
 
-    /// setup voices
-    char voicename[40];
-    strcpy(voicename, ESPEAKNG_DEFAULT_VOICE);
-    printf("default voice: %s\n", voicename);
-
-    result = espeak_ng_SetVoiceByName(voicename);
-	if (result != ENS_OK) {
-		memset(&voice_select, 0, sizeof(voice_select));
-		voice_select.languages = voicename;
-        dump_espeak_VOICE(&voice_select);
-
-        const char *voice_id;
-        int voice_found;
-
-        voice_id = SelectVoice(&voice_select, &voice_found);
-        if (voice_found == 0) {
-            printf("voice not found\n");
-            exit(0);
-        }
-        LoadVoiceVariant(voice_id, 0);
-        DoVoiceChange(voice);
-        SetVoiceStack(&voice_select, "");
-	}
-
-    char *p_text = "The quick brown fox jumps over the lazy dogs";
+    char *p_text = "I am going to type more than one sentence. Welcome to Precursor!";
     int size;
-	int synth_flags = espeakCHARS_AUTO | espeakPHONEMES | espeakENDPAUSE;
-    size = strlen(p_text);
-    espeak_Synth(p_text, size+1, 0, POS_CHARACTER, 0, synth_flags, NULL, NULL);
+    size = strlen(p_text) + 1;
+    printf("calling espeak_synth\n");
+    espeak_ffi_synth(p_text, size);
 
-	espeak_ng_Synchronize();
+    printf("synchronize\n");
+	espeak_ffi_sync();
+
+    //// these are specific to the main environment
 	CloseWavFile();
 	espeak_ng_Terminate();
 	return 0;

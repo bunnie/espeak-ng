@@ -90,6 +90,7 @@ void WavegenSetVoice(voice_t *v);
 void ReadTonePoints(char *string, int *tone_pts);
 void VoiceReset(int control);
 void FreeVoiceList(void);
+ESPEAK_NG_API espeak_ng_STATUS SetVoiceMinimal(void);
 
 #ifdef __cplusplus
 }

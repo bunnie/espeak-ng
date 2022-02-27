@@ -39,6 +39,20 @@ CSRC = \
 	libespeak-ng/voices.c \
 	libespeak-ng/wavegen.c
 
+PHONEMES = \
+    bin/intonations \
+	bin/phondata \
+	bin/phonindex \
+	bin/phontab \
+	bin/en_dict
+
+PHONEME_HEADERS = \
+	phondata.h \
+	phonindex.h \
+	phontab.h \
+	intonations.h \
+	en_dict.h
+
 LDSCRIPT=
 
 # Various directories
@@ -136,7 +150,19 @@ endif
 
 OUTFILES := $(BUILDDIR)/$(PROJECT).a
 
+$(PHONEME_HEADERS): $(PHONEMES)
+	./phongen.py -f bin/phondata -o phondata
+	./phongen.py -f bin/phonindex -o phonindex
+	./phongen.py -f bin/phontab -o phontab
+	./phongen.py -f bin/intonations -o intonations
+	./phongen.py -f bin/en_dict -o en_dict
+
 # test program
-test: test.c $(BUILDDIR)/$(PROJECT).a
+test: test.c ffi.c $(BUILDDIR)/$(PROJECT).a $(PHONEMES) $(PHONEME_HEADERS)
 	$(CC) -c $(CFLAGS) $(TOPT) -I. $(IINCDIR) -o test.o test.c
-	$(LD) test.o -L./$(BUILDDIR) -lespeak -lm -o test
+	$(CC) -c $(CFLAGS) $(TOPT) -I. $(IINCDIR) -o ffi.o ffi.c
+	$(LD) test.o ffi.o -L./$(BUILDDIR) -lespeak -lm -o test
+
+ffi: ffi.c $(OBJS) $(LDSCRIPT) $(PHONEMES) $(PHONEME_HEADERS)
+	$(CC) -c $(CFLAGS) $(TOPT) -I. $(IINCDIR) -o ffi.o ffi.c
+	@$(AR) rvs $@ $(OBJS) $(LDFLAGS)

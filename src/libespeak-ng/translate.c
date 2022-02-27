@@ -210,11 +210,12 @@ int isspace2(unsigned int c)
 
 void DeleteTranslator(Translator *tr)
 {
+	/*
 	if (!tr) return;
 
 	if (tr->data_dictlist != NULL)
 		free(tr->data_dictlist);
-	free(tr);
+	free(tr);*/
 }
 
 int lookupwchar(const unsigned short *list, int c)

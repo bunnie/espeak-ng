@@ -442,7 +442,8 @@ static espeak_ng_STATUS Synthesize(unsigned int unique_identifier, const void *t
 
 	espeak_ng_STATUS status;
 	if (translator == NULL) {
-		status = espeak_ng_SetVoiceByName(ESPEAKNG_DEFAULT_VOICE);
+		//status = espeak_ng_SetVoiceByName(ESPEAKNG_DEFAULT_VOICE);
+		status = SetVoiceMinimal();
 		if (status != ENS_OK)
 			return status;
 	}

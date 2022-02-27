@@ -41,6 +41,8 @@
 #include "synthesize.h"                    // for STRESS_IS_PRIMARY, phoneme...
 #include "translate.h"                     // for Translator, utf8_in, LANGU...
 
+#include "en_dict.h"
+
 typedef struct {
 	int points;
 	const char *phonemes;
@@ -207,6 +209,7 @@ int LoadDictionary(Translator *tr, const char *name, int no_error)
 	int size;
 	char fname[sizeof(path_home)+20];
 
+#if 0
 	if (dictionary_name != name)
 		strncpy(dictionary_name, name, 40); // currently loaded dictionary name
 	if (tr->dictionary_name != name)
@@ -238,7 +241,11 @@ int LoadDictionary(Translator *tr, const char *name, int no_error)
 	}
 	size = fread(tr->data_dictlist, 1, size, f);
 	fclose(f);
-
+#else
+	printf("assigning en_dict\n");
+	tr->data_dictlist = (char *) en_dict_data;
+	size = sizeof(en_dict_data);
+#endif
 	pw = (int *)(tr->data_dictlist);
 	length = Reverse4Bytes(pw[1]);
 
