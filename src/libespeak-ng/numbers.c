@@ -39,6 +39,9 @@
 #include "synthesize.h"  // for phoneme_tab
 #include "translate.h"   // for Translator, LANGUAGE_OPTIONS, IsDigit09, WOR...
 #include "voice.h"       // for voice, voice_t
+#ifdef XOUS
+#include "libc.h"
+#endif
 
 #define M_LIGATURE  0x8000
 #define M_NAME      0

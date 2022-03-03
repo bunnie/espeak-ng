@@ -29,6 +29,9 @@
 #include "espeak-ng/speak_lib.h"  // for espeakCHARS_16BIT, espeakCHARS_8BIT
 #include "mnemonics.h"               // for LookupMnem, MNEM_TAB
 #include "translate.h"            // for LEADING_2_BITS, UTF8_TAIL_BITS
+#ifdef XOUS
+#include "libc.h"
+#endif
 
 // http://www.iana.org/assignments/character-sets/character-sets.xhtml
 MNEM_TAB mnem_encoding[] = {

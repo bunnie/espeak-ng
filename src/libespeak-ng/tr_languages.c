@@ -33,6 +33,9 @@
 
 #include "setlengths.h"          // for SetLengthMods
 #include "translate.h"           // for Translator, LANGUAGE_OPTIONS, L, NUM...
+#ifdef XOUS
+#include "libc.h"
+#endif
 
 // start of unicode pages for character sets
 #define OFFSET_GREEK    0x380

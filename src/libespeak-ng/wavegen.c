@@ -46,6 +46,10 @@
 
 #include "sintab.h"
 
+#ifdef XOUS
+#include "libc.h"
+#endif
+
 static void SetSynth(int length, int modn, frame_t *fr1, frame_t *fr2, voice_t *v);
 
 voice_t *wvoice = NULL;
@@ -1237,7 +1241,7 @@ static void SetSynth(int length, int modn, frame_t *fr1, frame_t *fr2, voice_t *
 		}
 	}
 }
-
+#ifndef XOUS
 void Write4Bytes(FILE *f, int value)
 {
 	// Write 4 bytes to a file, least significant first
@@ -1248,6 +1252,7 @@ void Write4Bytes(FILE *f, int value)
 		value = value >> 8;
 	}
 }
+#endif
 
 static int WavegenFill2()
 {

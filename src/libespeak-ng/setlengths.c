@@ -37,6 +37,9 @@
 #include "voice.h"
 #include "synthesize.h"
 #include "translate.h"
+#ifdef XOUS
+#include "libc.h"
+#endif
 
 extern int saved_parameters[];
 
@@ -737,7 +740,7 @@ void CalcLengths(Translator *tr)
 			p->length = length_mod;
 
 			if (p->env >= (N_ENVELOPE_DATA-1)) {
-				fprintf(stderr, "espeak: Bad intonation data\n");
+				printf("espeak: Bad intonation data\n");
 				p->env = 0;
 			}
 

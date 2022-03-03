@@ -40,6 +40,9 @@
 #include "synthdata.h"                     // for PhonemeCode, InterpretPhoneme
 #include "synthesize.h"                    // for STRESS_IS_PRIMARY, phoneme...
 #include "translate.h"                     // for Translator, utf8_in, LANGU...
+#ifdef XOUS
+#include "libc.h"
+#endif
 
 #include "en_dict.h"
 
@@ -143,7 +146,7 @@ static void InitGroups(Translator *tr)
 	// a RULE_GROUP_END.
 	if (*p != RULE_GROUP_END) while (*p != 0) {
 		if (*p != RULE_GROUP_START) {
-			fprintf(stderr, "Bad rules data in '%s_dict' at 0x%x (%c)\n", dictionary_name, (unsigned int)(p - tr->data_dictrules), *p);
+			printf("Bad rules data in '%s_dict' at 0x%x (%c)\n", dictionary_name, (unsigned int)(p - tr->data_dictrules), *p);
 			break;
 		}
 		p++;
@@ -205,11 +208,11 @@ int LoadDictionary(Translator *tr, const char *name, int no_error)
 	char *p;
 	int *pw;
 	int length;
-	FILE *f;
 	int size;
 	char fname[sizeof(path_home)+20];
 
 #if 0
+	FILE *f;
 	if (dictionary_name != name)
 		strncpy(dictionary_name, name, 40); // currently loaded dictionary name
 	if (tr->dictionary_name != name)
@@ -250,13 +253,13 @@ int LoadDictionary(Translator *tr, const char *name, int no_error)
 	length = Reverse4Bytes(pw[1]);
 
 	if (size <= (N_HASH_DICT + sizeof(int)*2)) {
-		fprintf(stderr, "Empty _dict file: '%s\n", fname);
+		printf("Empty _dict file: '%s\n", fname);
 		return 2;
 	}
 
 	if ((Reverse4Bytes(pw[0]) != N_HASH_DICT) ||
 	    (length <= 0) || (length > 0x8000000)) {
-		fprintf(stderr, "Bad data: '%s' (%x length=%x)\n", fname, Reverse4Bytes(pw[0]), length);
+		printf("Bad data: '%s' (%x length=%x)\n", fname, Reverse4Bytes(pw[0]), length);
 		return 2;
 	}
 	tr->data_dictrules = &(tr->data_dictlist[length]);
@@ -275,7 +278,7 @@ int LoadDictionary(Translator *tr, const char *name, int no_error)
 	}
 
 	if ((tr->dict_min_size > 0) && (size < (unsigned int)tr->dict_min_size))
-		fprintf(stderr, "Full dictionary is not installed for '%s'\n", name);
+		printf("Full dictionary is not installed for '%s'\n", name);
 
 	return 0;
 }

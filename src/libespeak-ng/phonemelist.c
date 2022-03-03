@@ -38,6 +38,9 @@
 #include "phoneme.h"
 #include "synthesize.h"
 #include "translate.h"
+#ifdef XOUS
+#include "libc.h"
+#endif
 
 const unsigned char pause_phonemes[8] = {
 	0, phonPAUSE_VSHORT, phonPAUSE_SHORT, phonPAUSE, phonPAUSE_LONG, phonGLOTTALSTOP, phonPAUSE_LONG, phonPAUSE_LONG

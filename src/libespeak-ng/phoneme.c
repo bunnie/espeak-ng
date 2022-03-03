@@ -25,6 +25,9 @@
 #include <espeak-ng/speak_lib.h>
 
 #include "phoneme.h"
+#ifdef XOUS
+#include "libc.h"
+#endif
 
 phoneme_feature_t phoneme_feature_from_string(const char *feature)
 {

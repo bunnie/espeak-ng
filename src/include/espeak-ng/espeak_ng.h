@@ -97,10 +97,12 @@ espeak_ng_GetStatusCodeMessage(espeak_ng_STATUS status,
                                char *buffer,
                                size_t length);
 
+#ifndef XOUS
 ESPEAK_NG_API void
 espeak_ng_PrintStatusCodeMessage(espeak_ng_STATUS status,
                                  FILE *out,
                                  espeak_ng_ERROR_CONTEXT context);
+#endif
 
 ESPEAK_NG_API void
 espeak_ng_InitializePath(const char *path);
@@ -167,13 +169,13 @@ espeak_ng_Synchronize(void);
 ESPEAK_NG_API espeak_ng_STATUS
 espeak_ng_Terminate(void);
 
+#ifndef XOUS
 ESPEAK_NG_API espeak_ng_STATUS
 espeak_ng_CompileDictionary(const char *dsource,
                             const char *dict_name,
                             FILE *log,
                             int flags,
                             espeak_ng_ERROR_CONTEXT *context);
-
 ESPEAK_NG_API espeak_ng_STATUS
 espeak_ng_CompileMbrolaVoice(const char *path,
                              FILE *log,
@@ -196,7 +198,8 @@ espeak_ng_CompilePhonemeDataPath(long rate,
                                  const char *destination_path,
                                  FILE *log,
                                  espeak_ng_ERROR_CONTEXT *context);
-                                 
+#endif
+
 ESPEAK_NG_API espeak_ng_STATUS
 espeak_ng_SetOutputHooks(espeak_ng_OUTPUT_HOOKS* hooks);
 ESPEAK_NG_API espeak_ng_STATUS

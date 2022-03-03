@@ -691,7 +691,9 @@ void TranslateClause(Translator *tr, int *tone, char **voice_change);
 
 void SetVoiceStack(espeak_VOICE *v, const char *variant_name);
 
+#ifndef XOUS
 extern FILE *f_trans; // for logging
+#endif
 
 #ifdef __cplusplus
 }

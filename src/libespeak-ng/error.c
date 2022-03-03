@@ -28,6 +28,9 @@
 
 #include "error.h"
 #include "dictionary.h"           // for strncpy0
+#ifdef XOUS
+#include "libc.h"
+#endif
 
 espeak_ng_STATUS
 create_file_error_context(espeak_ng_ERROR_CONTEXT *context,
@@ -144,7 +147,7 @@ espeak_ng_GetStatusCodeMessage(espeak_ng_STATUS status,
 		break;
 	}
 }
-
+#ifndef XOUS
 ESPEAK_NG_API void
 espeak_ng_PrintStatusCodeMessage(espeak_ng_STATUS status,
                                  FILE *out,
@@ -166,5 +169,5 @@ espeak_ng_PrintStatusCodeMessage(espeak_ng_STATUS status,
 	} else
 		fprintf(out, "Error: %s.\n", error);
 }
-
+#endif
 #pragma GCC visibility pop

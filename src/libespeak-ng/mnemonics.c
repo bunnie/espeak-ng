@@ -24,6 +24,9 @@
 #include <espeak-ng/espeak_ng.h>
 
 #include "mnemonics.h"  // for MNEM_TAB, LookupMnem, LookupMnemName
+#ifdef XOUS
+#include "libc.h"
+#endif
 
 int LookupMnem(MNEM_TAB *table, const char *string)
 {

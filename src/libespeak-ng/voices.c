@@ -31,7 +31,9 @@
 #if defined(_WIN32) || defined(_WIN64)
 #include <windows.h>
 #else
+#ifndef XOUS
 #include <dirent.h>
+#endif
 #endif
 
 #include <espeak-ng/espeak_ng.h>
@@ -48,6 +50,9 @@
 #include "synthesize.h"               // for SetSpeed, SPEED_FACTORS, speed
 #include "translate.h"                // for LANGUAGE_OPTIONS, DeleteTranslator
 #include "wavegen.h"                  // for InitBreath
+#ifdef XOUS
+#include "libc.h"
+#endif
 
 MNEM_TAB genders[] = {
 	{ "male", ENGENDER_MALE },
@@ -188,6 +193,13 @@ status mature\n\
 \n\
 tunes s1 c1 q1 e1\n";
 
+static char *fgets_string(char *buf, int size);
+#ifndef XOUS
+static char *fgets_strip(char *buf, int size, FILE *f_in);
+#else
+static char *fgets_strip(char *buf, int size);
+#endif
+
 static char *fgets_string(char *buf, int size) {
 	static long unsigned int pos = 0;
 	int num = 0;
@@ -208,7 +220,11 @@ static char *fgets_string(char *buf, int size) {
 	return buf;
 }
 
+#ifndef XOUS
 static char *fgets_strip(char *buf, int size, FILE *f_in)
+#else
+static char *fgets_strip(char *buf, int size)
+#endif
 {
 	// strip trailing spaces, and truncate lines at // comment
 	int len;
@@ -296,6 +312,7 @@ void ReadTonePoints(char *string, int *tone_pts)
 	       &tone_pts[8], &tone_pts[9]);
 }
 
+#ifndef XOUS
 static espeak_VOICE *ReadVoiceFile(FILE *f_in, const char *fname, int is_language_file)
 {
 	// Read a Voice file, allocate a VOICE_DATA and set data from the
@@ -352,7 +369,7 @@ static espeak_VOICE *ReadVoiceFile(FILE *f_in, const char *fname, int is_languag
 		case V_GENDER:
 			sscanf(p, "%s %d", vgender, &age);
 			if (is_language_file)
-				fprintf(stderr, "Error (%s): gender attribute specified on a language file\n", fname);
+				printf("Error (%s): gender attribute specified on a language file\n", fname);
 			break;
 		case V_VARIANTS:
 			sscanf(p, "%d", &n_variants);
@@ -388,7 +405,7 @@ static espeak_VOICE *ReadVoiceFile(FILE *f_in, const char *fname, int is_languag
 	voice_data->xx1 = n_variants;
 	return voice_data;
 }
-
+#endif
 void VoiceReset(int tone_only)
 {
 	// Set voice to the default values
@@ -531,7 +548,7 @@ static void ReadNumbers(char *p, int *flags, int maxValue,  MNEM_TAB *keyword_ta
 			if (n < maxValue) {
 				*flags |= (1 << n);
 			} else {
-				fprintf(stderr, "%s: Bad option number %d\n", LookupMnemName(keyword_tab, key), n);
+				printf("%s: Bad option number %d\n", LookupMnemName(keyword_tab, key), n);
 			}
 		}
 	while (isalnum(*p)) p++;
@@ -546,7 +563,7 @@ static int CheckTranslator(Translator *tr, MNEM_TAB *keyword_tab, int key)
 	if (tr)
 		return 0;
 
-	fprintf(stderr, "Cannot set %s: language not set, or is invalid.\n", LookupMnemName(keyword_tab, key));
+	printf("Cannot set %s: language not set, or is invalid.\n", LookupMnemName(keyword_tab, key));
 	return 1;
 }
 
@@ -559,8 +576,9 @@ voice_t *LoadVoice(const char *vname, int control)
         //          bit 8  1 = INTERNAL: compiling phonemes; do not try to
         //                     load the phoneme table
         //          bit 16 1 = UNDOCUMENTED
-
+#ifndef XOUS
 	FILE *f_voice = NULL;
+#endif
 	char *p;
 	int key;
 	int ix;
@@ -668,14 +686,13 @@ voice_t *LoadVoice(const char *vname, int control)
 	} else {
 		printf("tone_only: %d, translator: NULL\n", tone_only);
 	}
-	fflush(stdout);
 #endif
 	VoiceReset(tone_only);
 
 #ifndef XOUS
 	while ((f_voice != NULL) && (fgets_strip(buf, sizeof(buf), f_voice) != NULL)) {
 #else
-	while (fgets_strip(buf, sizeof(buf), f_voice) != NULL) {
+	while (fgets_strip(buf, sizeof(buf)) != NULL) {
 #endif
 		//printf("buf: %s\n", buf);
 		//fflush(stdout);
@@ -836,7 +853,7 @@ voice_t *LoadVoice(const char *vname, int control)
 					continue;
 
 				if ((value = LookupTune(names[ix])) < 0)
-					fprintf(stderr, "Unknown tune '%s'\n", names[ix]);
+					printf("Unknown tune '%s'\n", names[ix]);
 				else
 					translator->langopts.tunes[ix] = value;
 			}
@@ -870,7 +887,7 @@ voice_t *LoadVoice(const char *vname, int control)
 						if (n < 64)
 							translator->langopts.numbers2 |= (1 << (n-32));
 						else
-							fprintf(stderr, "numbers: Bad option number %d\n", n);					}
+							printf("numbers: Bad option number %d\n", n);					}
 				}
 				while (isalnum(*p)) p++;
 			}
@@ -959,8 +976,10 @@ voice_t *LoadVoice(const char *vname, int control)
 			sscanf(p, "%s %s %d", name1, name2, &srate);
 			espeak_ng_STATUS status = LoadMbrolaTable(name1, name2, &srate);
 			if (status != ENS_OK) {
+#ifndef XOUS
 				espeak_ng_PrintStatusCodeMessage(status, stderr, NULL);
 				fclose(f_voice);
+#endif
 				return NULL;
 			}
 			else
@@ -995,13 +1014,14 @@ voice_t *LoadVoice(const char *vname, int control)
 					break;
 				sscanf(p, "%d", &translator->langopts.param[key &0xff]);
 			} else
-				fprintf(stderr, "Bad voice attribute: %s\n", buf);
+				printf("Bad voice attribute: %s\n", buf);
 			break;
 		}
 	}
+#ifndef XOUS
 	if (f_voice != NULL)
 		fclose(f_voice);
-
+#endif
 	if ((translator == NULL) && (!tone_only)) {
 		// not set by language attribute
 		translator = SelectTranslator(translator_name);
@@ -1017,7 +1037,7 @@ voice_t *LoadVoice(const char *vname, int control)
                          */
                         ix = 0;
                 } else if ((ix = SelectPhonemeTableName(phonemes_name)) < 0) {
-			fprintf(stderr, "Unknown phoneme table: '%s'\n", phonemes_name);
+			printf("Unknown phoneme table: '%s'\n", phonemes_name);
 			ix = 0;
 		}
 
@@ -1512,7 +1532,7 @@ static void GetVoices(const char *path, int len_path_voices, int is_language_fil
 
 	do {
 		if (n_voices_list >= (N_VOICES_LIST-2)) {
-			fprintf(stderr, "Warning: maximum number %d of (N_VOICES_LIST = %d - 1) reached\n", n_voices_list + 1, N_VOICES_LIST);
+			printf("Warning: maximum number %d of (N_VOICES_LIST = %d - 1) reached\n", n_voices_list + 1, N_VOICES_LIST);
 			break; // voices list is full
 		}
 
@@ -1547,7 +1567,7 @@ static void GetVoices(const char *path, int len_path_voices, int is_language_fil
 
 	while ((ent = readdir(dir)) != NULL) {
 		if (n_voices_list >= (N_VOICES_LIST-2)) {
-			fprintf(stderr, "Warning: maximum number %d of (N_VOICES_LIST = %d - 1) reached\n", n_voices_list + 1, N_VOICES_LIST);
+			printf("Warning: maximum number %d of (N_VOICES_LIST = %d - 1) reached\n", n_voices_list + 1, N_VOICES_LIST);
 			break; // voices list is full
 		}
 

@@ -60,7 +60,9 @@
 #include "translate.h"            // for p_decoder, InitText, translator
 #include "voice.h"                // for FreeVoiceList, VoiceReset, current_...
 #include "wavegen.h"              // for WavegenFill, WavegenInit, WcmdqUsed
+#ifdef XOUS
 #include "libc.h"
+#endif
 
 unsigned char *outbuf = NULL;
 int outbuf_size = 0;

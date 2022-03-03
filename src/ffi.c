@@ -14,15 +14,15 @@
 
 #include <espeak-ng/espeak_ng.h>
 #include <espeak-ng/speak_lib.h>
-#include <ssml.h>
-#include <speak_lib.h>
-#include <readclause.h>
-#include <voice.h>
+// #include "ssml.h"
+#include "espeak-ng/speak_lib.h"
+#include "libespeak-ng/readclause.h"
+#include "libespeak-ng/voice.h"
 
-#include <fifo.h>
-#include <wavegen.h>
-#include <synthesize.h>
-#include <synthdata.h>
+#include "libespeak-ng/fifo.h"
+#include "libespeak-ng/wavegen.h"
+#include "libespeak-ng/synthesize.h"
+#include "libespeak-ng/synthdata.h"
 
 static espeak_ERROR status_to_espeak_error(espeak_ng_STATUS status)
 {
