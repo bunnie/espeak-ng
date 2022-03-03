@@ -25,7 +25,7 @@
 #include <espeak-ng/speak_lib.h>
 
 #include "phoneme.h"
-#ifdef XOUS
+#ifdef NO_STD
 #include "libc.h"
 #endif
 

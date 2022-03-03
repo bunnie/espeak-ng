@@ -50,7 +50,7 @@
 #include "synthesize.h"               // for SetSpeed, SPEED_FACTORS, speed
 #include "translate.h"                // for LANGUAGE_OPTIONS, DeleteTranslator
 #include "wavegen.h"                  // for InitBreath
-#ifdef XOUS
+#ifdef NO_STD
 #include "libc.h"
 #endif
 

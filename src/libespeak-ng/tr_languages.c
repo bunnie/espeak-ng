@@ -33,7 +33,7 @@
 
 #include "setlengths.h"          // for SetLengthMods
 #include "translate.h"           // for Translator, LANGUAGE_OPTIONS, L, NUM...
-#ifdef XOUS
+#ifdef NO_STD
 #include "libc.h"
 #endif
 

@@ -38,7 +38,7 @@
 #include "phoneme.h"
 #include "synthesize.h"
 #include "translate.h"
-#ifdef XOUS
+#ifdef NO_STD
 #include "libc.h"
 #endif
 

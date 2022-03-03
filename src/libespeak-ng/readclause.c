@@ -47,7 +47,7 @@
 #include "synthdata.h"            // for SelectPhonemeTable
 #include "translate.h"            // for Translator, utf8_out, CLAUSE_OPTION...
 #include "voice.h"                // for voice, voice_t, current_voice_selected
-#ifdef XOUS
+#ifdef NO_STD
 #include "libc.h"
 #endif
 #define N_XML_BUF   500

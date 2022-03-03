@@ -46,7 +46,7 @@
 
 #include "sintab.h"
 
-#ifdef XOUS
+#ifdef NO_STD
 #include "libc.h"
 #endif
 

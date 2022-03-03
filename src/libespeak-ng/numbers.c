@@ -39,7 +39,7 @@
 #include "synthesize.h"  // for phoneme_tab
 #include "translate.h"   // for Translator, LANGUAGE_OPTIONS, IsDigit09, WOR...
 #include "voice.h"       // for voice, voice_t
-#ifdef XOUS
+#ifdef NO_STD
 #include "libc.h"
 #endif
 

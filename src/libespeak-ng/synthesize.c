@@ -43,7 +43,7 @@
 #include "translate.h"            // for translator, LANGUAGE_OPTIONS, Trans...
 #include "voice.h"                // for voice_t, voice, LoadVoiceVariant
 #include "wavegen.h"              // for WcmdqInc, WcmdqFree, WcmdqStop
-#ifdef XOUS
+#ifdef NO_STD
 #include "libc.h"
 #endif
 

@@ -60,7 +60,7 @@
 #include "translate.h"            // for p_decoder, InitText, translator
 #include "voice.h"                // for FreeVoiceList, VoiceReset, current_...
 #include "wavegen.h"              // for WavegenFill, WavegenInit, WcmdqUsed
-#ifdef XOUS
+#ifdef NO_STD
 #include "libc.h"
 #endif
 

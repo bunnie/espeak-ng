@@ -42,7 +42,7 @@
 #include "synthesize.h"           // for PHONEME_LIST2, N_PHONEME_LIST, PHON...
 #include "ucd/ucd.h"              // for ucd_toupper
 #include "voice.h"                // for voice, voice_t
-#ifdef XOUS
+#ifdef NO_STD
 #include "libc.h"
 #endif
 

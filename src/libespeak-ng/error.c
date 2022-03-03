@@ -28,7 +28,7 @@
 
 #include "error.h"
 #include "dictionary.h"           // for strncpy0
-#ifdef XOUS
+#ifdef NO_STD
 #include "libc.h"
 #endif
 

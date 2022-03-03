@@ -24,7 +24,7 @@
 #include <espeak-ng/espeak_ng.h>
 
 #include "mnemonics.h"  // for MNEM_TAB, LookupMnem, LookupMnemName
-#ifdef XOUS
+#ifdef NO_STD
 #include "libc.h"
 #endif
 

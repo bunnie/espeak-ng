@@ -40,7 +40,7 @@
 #include "synthdata.h"                     // for PhonemeCode, InterpretPhoneme
 #include "synthesize.h"                    // for STRESS_IS_PRIMARY, phoneme...
 #include "translate.h"                     // for Translator, utf8_in, LANGU...
-#ifdef XOUS
+#ifdef NO_STD
 #include "libc.h"
 #endif
 

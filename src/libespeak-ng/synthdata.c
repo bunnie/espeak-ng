@@ -45,7 +45,7 @@
 #include "intonations.h"
 #include "phonindex.h"
 #include "phontab.h"
-#ifdef XOUS
+#ifdef NO_STD
 #include "libc.h"
 #endif
 

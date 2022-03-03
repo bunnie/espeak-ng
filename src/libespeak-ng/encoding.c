@@ -29,7 +29,7 @@
 #include "espeak-ng/speak_lib.h"  // for espeakCHARS_16BIT, espeakCHARS_8BIT
 #include "mnemonics.h"               // for LookupMnem, MNEM_TAB
 #include "translate.h"            // for LEADING_2_BITS, UTF8_TAIL_BITS
-#ifdef XOUS
+#ifdef NO_STD
 #include "libc.h"
 #endif
 

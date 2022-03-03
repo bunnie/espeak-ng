@@ -33,7 +33,7 @@
 #include "synthdata.h"   // for PhonemeCode
 #include "synthesize.h"  // for PHONEME_LIST, TUNE, phoneme_list, phoneme_tab
 #include "translate.h"   // for Translator, LANGUAGE_OPTIONS, L, OPTION_EMPH...
-#ifdef XOUS
+#ifdef NO_STD
 #include "libc.h"
 #endif
 
