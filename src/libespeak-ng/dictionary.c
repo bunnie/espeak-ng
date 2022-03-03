@@ -2151,7 +2151,7 @@ static void MatchRule(Translator *tr, char *word[], char *word_start, int group_
 					memcpy(&best, &match, sizeof(match));
 					total_consumed = consumed;
 				}
-
+#ifndef XOUS
 				if ((option_phonemes & espeakPHONEMES_TRACE) && (match.points > 0) && ((word_flags & FLAG_NO_TRACE) == 0)) {
 					// show each rule that matches, and it's points score
 					int pts;
@@ -2163,6 +2163,7 @@ static void MatchRule(Translator *tr, char *word[], char *word_start, int group_
 					DecodePhonemes(match.phonemes, decoded_phonemes);
 					fprintf(f_trans, "%3d\t%s [%s]\n", pts, DecodeRule(group_chars, group_length, rule_start, word_flags), decoded_phonemes);
 				}
+#endif
 			}
 		}
 
@@ -2222,7 +2223,7 @@ int TranslateRules(Translator *tr, char *p_start, char *phonemes, int ph_size, c
 			break;
 	}
 	word_copy[ix] = 0;
-
+#ifndef XOUS
 	if ((option_phonemes & espeakPHONEMES_TRACE) && ((word_flags & FLAG_NO_TRACE) == 0)) {
 		char wordbuf[120];
 		unsigned int ix;
@@ -2235,7 +2236,7 @@ int TranslateRules(Translator *tr, char *p_start, char *phonemes, int ph_size, c
 		else
 			fprintf(f_trans, "Translate '%s'\n", wordbuf);
 	}
-
+#endif
 	p = p_start;
 	tr->word_vowel_count = 0;
 	tr->word_stressed_count = 0;
@@ -2405,10 +2406,10 @@ int TranslateRules(Translator *tr, char *p_start, char *phonemes, int ph_size, c
 				strcpy(phonemes, match1.phonemes);
 				return 0;
 			}
-
+#ifndef XOUS
 			if ((option_phonemes & espeakPHONEMES_TRACE) && ((word_flags & FLAG_NO_TRACE) == 0))
 				fprintf(f_trans, "\n");
-
+#endif
 			match1.end_type &= ~SUFX_UNPRON;
 
 			if ((match1.end_type != 0) && (end_phonemes != NULL)) {
@@ -2790,10 +2791,12 @@ static const char *LookupDict2(Translator *tr, const char *word, const char *wor
 		}
 
 		if (phoneme_len == 0) {
+#ifndef XOUS
 			if (option_phonemes & espeakPHONEMES_TRACE) {
 				print_dictionary_flags(flags, dict_flags_buf, sizeof(dict_flags_buf));
 				fprintf(f_trans, "Flags:  %s  %s\n", word1, dict_flags_buf);
 			}
+#endif
 			return 0; // no phoneme translation found here, only flags. So use rules
 		}
 
@@ -2811,6 +2814,7 @@ static const char *LookupDict2(Translator *tr, const char *word, const char *wor
 			else
 				textmode = true;
 
+#ifndef XOUS
 			if (textmode == translator->langopts.textmode) {
 				// only show this line if the word translates to phonemes, not replacement text
 				if ((dictionary_flags & FLAG_SKIPWORDS) && (wtab != NULL)) {
@@ -2824,6 +2828,7 @@ static const char *LookupDict2(Translator *tr, const char *word, const char *wor
 				print_dictionary_flags(flags, dict_flags_buf, sizeof(dict_flags_buf));
 				fprintf(f_trans, "' [%s]  %s\n", ph_decoded, dict_flags_buf);
 			}
+#endif
 		}
 
 		ix = utf8_in(&c, word);
@@ -2945,13 +2950,14 @@ int LookupDictList(Translator *tr, char **wordptr, char *ph_out, unsigned int *f
 
 				word1 = *wordptr;
 				*wordptr = &word_replacement[2];
-
+#ifndef XOUS
 				if (option_phonemes & espeakPHONEMES_TRACE) {
 					len = found - word1;
 					memcpy(word, word1, len); // include multiple matching words
 					word[len] = 0;
 					fprintf(f_trans, "Replace: %s  %s\n", word, *wordptr);
 				}
+#endif
 			}
 
 			ph_out[0] = 0;
@@ -3115,9 +3121,10 @@ int RemoveEnding(Translator *tr, char *word, int end_type, char *word_copy)
 
 		if (end_flags & FLAG_SUFX_E_ADDED) {
 			utf8_out(tr->langopts.suffix_add_e, &word_end[1]);
-
+#ifndef XOUS
 			if (option_phonemes & espeakPHONEMES_TRACE)
 				fprintf(f_trans, "add e\n");
+#endif
 		}
 	}
 

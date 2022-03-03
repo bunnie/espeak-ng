@@ -24,6 +24,20 @@
 #include <synthesize.h>
 #include <synthdata.h>
 
+static espeak_ERROR status_to_espeak_error(espeak_ng_STATUS status)
+{
+	switch (status)
+	{
+	case ENS_OK:                     return EE_OK;
+	case ENS_SPEECH_STOPPED:         return EE_OK;
+	case ENS_VOICE_NOT_FOUND:        return EE_NOT_FOUND;
+	case ENS_MBROLA_NOT_FOUND:       return EE_NOT_FOUND;
+	case ENS_MBROLA_VOICE_NOT_FOUND: return EE_NOT_FOUND;
+	case ENS_FIFO_BUFFER_FULL:       return EE_BUFFER_FULL;
+	default:                         return EE_INTERNAL_ERROR;
+	}
+}
+
 extern int saved_parameters[N_SPEECH_PARAM]; // Parameters saved on synthesis start
 const int ffi_param_defaults[N_SPEECH_PARAM] = {
 	0,   // silence (internal use)
@@ -103,4 +117,13 @@ espeak_ng_STATUS espeak_ffi_synth(char *text, unsigned int size) {
 
 espeak_ng_STATUS espeak_ffi_sync(void) {
     return espeak_ng_Synchronize();
+}
+
+ESPEAK_API espeak_ERROR espeak_Synth(const void *text, size_t size,
+                                     unsigned int position,
+                                     espeak_POSITION_TYPE position_type,
+                                     unsigned int end_position, unsigned int flags,
+                                     unsigned int *unique_identifier, void *user_data)
+{
+	return status_to_espeak_error(espeak_ng_Synthesize(text, size, position, position_type, end_position, flags, unique_identifier, user_data));
 }

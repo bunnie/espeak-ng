@@ -1182,6 +1182,7 @@ static int __cdecl rgroup_sorter(RGROUP *a, RGROUP *b)
 	return a->start-b->start;
 }
 
+#ifndef XOUS
 static void output_rule_group(FILE *f_out, int n_rules, char **rules, char *name)
 {
 	int ix;
@@ -1299,6 +1300,7 @@ static int compile_lettergroup(char *input, FILE *f_out)
 
 	return 0;
 }
+#endif
 
 static void free_rules(char **rules, int n_rules)
 {
@@ -1308,6 +1310,7 @@ static void free_rules(char **rules, int n_rules)
 	}
 }
 
+#ifndef XOUS
 static espeak_ng_STATUS compile_dictrules(FILE *f_in, FILE *f_out, char *fname_temp, espeak_ng_ERROR_CONTEXT *context)
 {
 	char *prule;
@@ -1601,3 +1604,4 @@ ESPEAK_NG_API espeak_ng_STATUS espeak_ng_CompileDictionary(const char *dsource, 
 	return error_count > 0 ? ENS_COMPILE_ERROR : ENS_OK;
 }
 #pragma GCC visibility pop
+#endif

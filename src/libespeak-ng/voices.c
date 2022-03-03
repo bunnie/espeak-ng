@@ -178,8 +178,6 @@ const char *variant_lists[3] = { variants_either, variants_male, variants_female
 static voice_t voicedata;
 voice_t *voice = &voicedata;
 
-#define NORMAL_MODE 0
-
 static char en_voice[] = "\
 name English (Great Britain)\n\
 language en-gb  2\n\
@@ -215,7 +213,7 @@ static char *fgets_strip(char *buf, int size, FILE *f_in)
 	// strip trailing spaces, and truncate lines at // comment
 	int len;
 	char *p;
-#if NORMAL_MODE
+#ifndef XOUS
 	if (fgets(buf, size, f_in) == NULL)
 		return NULL;
 #else
@@ -594,9 +592,8 @@ voice_t *LoadVoice(const char *vname, int control)
 	static char voice_name[40];       // voice name for current_voice_selected
 	static char voice_languages[100]; // list of languages and priorities for current_voice_selected
 
-#if NORMAL_MODE
+#ifndef XOUS
 	strncpy0(voicename, vname, sizeof(voicename));
-	#if 0
 	if (control & 0x10) {
 		strcpy(buf, vname);
 		if (GetFileLength(buf) <= 0)
@@ -613,9 +610,7 @@ voice_t *LoadVoice(const char *vname, int control)
 			sprintf(buf, "%s%s", path_voices, voicename); // look in the main languages directory
 		}
 	}
-	#endif
 
-	strcpy(buf, "/usr/local/share/espeak-ng-data/lang/gmw/en");
 	printf("opening voice %s\n", buf);
 	f_voice = fopen(buf, "r");
 
@@ -677,7 +672,7 @@ voice_t *LoadVoice(const char *vname, int control)
 #endif
 	VoiceReset(tone_only);
 
-#if NORMAL_MODE
+#ifndef XOUS
 	while ((f_voice != NULL) && (fgets_strip(buf, sizeof(buf), f_voice) != NULL)) {
 #else
 	while (fgets_strip(buf, sizeof(buf), f_voice) != NULL) {
@@ -1245,9 +1240,9 @@ static int ScoreVoice(espeak_VOICE *voice_spec, const char *spec_language, int s
 		score = 1;
 	return score;
 }
-
 static int SetVoiceScores(espeak_VOICE *voice_select, espeak_VOICE **voices, int control)
 {
+#ifndef XOUS
 	// control: bit0=1  include mbrola voices
 	int ix;
 	int score;
@@ -1310,8 +1305,10 @@ static int SetVoiceScores(espeak_VOICE *voice_select, espeak_VOICE **voices, int
 	qsort(voices, nv, sizeof(espeak_VOICE *), (int(__cdecl *)(const void *, const void *))VoiceScoreSorter);
 
 	return nv;
+#else
+	return 0;
+#endif
 }
-
 espeak_VOICE *SelectVoiceByName(espeak_VOICE **voices, const char *name2)
 {
 	int ix;
@@ -1497,6 +1494,7 @@ char const *SelectVoice(espeak_VOICE *voice_select, int *found)
 
 static void GetVoices(const char *path, int len_path_voices, int is_language_file)
 {
+#ifndef XOUS
 	FILE *f_voice;
 	espeak_VOICE *voice_data;
 	int ftype;
@@ -1578,6 +1576,7 @@ static void GetVoices(const char *path, int len_path_voices, int is_language_fil
 		}
 	}
 	closedir(dir);
+#endif
 #endif
 }
 

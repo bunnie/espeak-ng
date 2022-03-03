@@ -6,38 +6,40 @@ ifeq ($(USE_VERBOSE_COMPILE),)
 endif
 
 CSRC = \
-	ucd-tools/src/case.c \
-	ucd-tools/src/categories.c \
-	ucd-tools/src/ctype.c \
-	ucd-tools/src/proplist.c \
-	ucd-tools/src/scripts.c \
-	ucd-tools/src/tostring.c \
-	libespeak-ng/compiledata.c \
-	libespeak-ng/compiledict.c \
-	libespeak-ng/compilembrola.c \
-	libespeak-ng/dictionary.c \
-	libespeak-ng/encoding.c \
-	libespeak-ng/error.c \
-	libespeak-ng/espeak_api.c \
-	libespeak-ng/ieee80.c \
-	libespeak-ng/intonation.c \
-	libespeak-ng/mnemonics.c \
-	libespeak-ng/numbers.c \
-	libespeak-ng/readclause.c \
-	libespeak-ng/phoneme.c \
-	libespeak-ng/phonemelist.c \
-	libespeak-ng/setlengths.c \
-	libespeak-ng/soundicon.c \
-	libespeak-ng/spect.c \
-	libespeak-ng/speech.c \
-	libespeak-ng/ssml.c \
-	libespeak-ng/synthdata.c \
-	libespeak-ng/synthesize.c \
-	libespeak-ng/synth_mbrola.c \
 	libespeak-ng/translate.c \
-	libespeak-ng/tr_languages.c \
+	libespeak-ng/speech.c \
+	libespeak-ng/wavegen.c \
+	libespeak-ng/synthesize.c \
+	libespeak-ng/dictionary.c \
 	libespeak-ng/voices.c \
-	libespeak-ng/wavegen.c
+	libespeak-ng/synthdata.c \
+	libespeak-ng/readclause.c \
+    libespeak-ng/numbers.c \
+    libespeak-ng/setlengths.c \
+    libespeak-ng/tr_languages.c \
+    libespeak-ng/encoding.c \
+    libespeak-ng/intonation.c \
+    libespeak-ng/synth_mbrola.c \
+    libespeak-ng/phoneme.c \
+    libespeak-ng/phonemelist.c \
+    libespeak-ng/compiledict.c \
+    libespeak-ng/mnemonics.c \
+    libespeak-ng/error.c \
+    ucd-tools/src/case.c \
+    ucd-tools/src/categories.c \
+    ucd-tools/src/proplist.c \
+    ucd-tools/src/ctype.c
+
+
+#   ucd-tools/src/scripts.c \
+#   ucd-tools/src/tostring.c \
+#   libespeak-ng/compiledata.c \
+#   libespeak-ng/compilembrola.c \
+#   libespeak-ng/espeak_api.c \
+#   libespeak-ng/ieee80.c \
+#   libespeak-ng/soundicon.c \
+#   libespeak-ng/spect.c \
+#   libespeak-ng/ssml.c \
 
 PHONEMES = \
     bin/intonations \
@@ -98,12 +100,14 @@ OD   = $(TRGT)objdump
 SZ   = $(TRGT)size
 
 # macros
-DEFS =
+DEFS = -DXOUS
 
 # Define C warning options here
 CWARN = -Wall -Wextra -Wundef -Wstrict-prototypes
-COPT = -O2 -ggdb -fomit-frame-pointer -falign-functions=16 -fstack-protector -flto
+COPT = -O0 -ggdb3
+# -fomit-frame-pointer -falign-functions=16 -fstack-protector -flto
 # collate all flags
+# note: -fdump-rtl-expand is contraindicated with options in COPT
 CFLAGS    = $(MCFLAGS) $(COPT) $(CWARN) -Wa,-alms=$(LSTDIR)/$(notdir $(<:.c=.lst)) $(DEFS)
 
 # rule to make .o's # Makefile
@@ -158,7 +162,7 @@ $(PHONEME_HEADERS): $(PHONEMES)
 	./phongen.py -f bin/en_dict -o en_dict
 
 # test program
-test: test.c ffi.c $(BUILDDIR)/$(PROJECT).a $(PHONEMES) $(PHONEME_HEADERS)
+test: test.c ffi.c $(BUILDDIR)/$(PROJECT).a $(PHONEMES) $(PHONEME_HEADERS) Makefile
 	$(CC) -c $(CFLAGS) $(TOPT) -I. $(IINCDIR) -o test.o test.c
 	$(CC) -c $(CFLAGS) $(TOPT) -I. $(IINCDIR) -o ffi.o ffi.c
 	$(LD) test.o ffi.o -L./$(BUILDDIR) -lespeak -lm -o test
@@ -166,3 +170,8 @@ test: test.c ffi.c $(BUILDDIR)/$(PROJECT).a $(PHONEMES) $(PHONEME_HEADERS)
 ffi.a: ffi.c $(OBJS) $(LDSCRIPT) $(PHONEMES) $(PHONEME_HEADERS)
 	$(CC) -c $(CFLAGS) $(TOPT) -I. $(IINCDIR) -o ffi.o ffi.c
 	@$(AR) rvs $@ $(OBJS) $(LDFLAGS) ffi.o
+
+clean:
+	rm $(BUILDDIR)/$(PROJECT).a
+	rm $(OBJDIR)/*
+	rm $(LSTDIR)/*

@@ -247,6 +247,7 @@ int sync_espeak_terminated_msg(uint32_t unique_identifier, void *user_data)
 
 #endif
 
+#ifndef XOUS
 static int check_data_path(const char *path, int allow_directory)
 {
 	if (!path) return 0;
@@ -261,6 +262,7 @@ static int check_data_path(const char *path, int allow_directory)
 	snprintf(path_home, sizeof(path_home), "%s", path);
 	return GetFileLength(path_home) == -EISDIR;
 }
+#endif
 
 #pragma GCC visibility push(default)
 
@@ -302,6 +304,7 @@ ESPEAK_NG_API espeak_ng_STATUS espeak_ng_InitializeOutput(espeak_ng_OUTPUT_MODE 
 	return ENS_OK;
 }
 
+#ifndef XOUS
 int GetFileLength(const char *filename)
 {
 	struct stat statbuf;
@@ -349,6 +352,7 @@ ESPEAK_NG_API void espeak_ng_InitializePath(const char *path)
 
 	strcpy(path_home, PATH_ESPEAK_DATA);
 }
+#endif
 
 const int param_defaults[N_SPEECH_PARAM] = {
 	0,   // silence (internal use)
@@ -839,6 +843,7 @@ ESPEAK_NG_API espeak_ng_STATUS espeak_ng_SetPunctuationList(const wchar_t *punct
 #endif
 }
 
+#ifndef XOUS
 ESPEAK_API void espeak_SetPhonemeTrace(int phonememode, FILE *stream)
 {
 	/* phonememode:  Controls the output of phoneme symbols for the text
@@ -859,6 +864,7 @@ ESPEAK_API void espeak_SetPhonemeTrace(int phonememode, FILE *stream)
 	if (stream == NULL)
 		f_trans = stderr;
 }
+#endif
 
 ESPEAK_API const char *espeak_TextToPhonemes(const void **textptr, int textmode, int phonememode)
 {

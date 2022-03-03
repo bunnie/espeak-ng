@@ -47,7 +47,9 @@ Translator *translator = NULL; // the main translator
 Translator *translator2 = NULL; // secondary translator for certain words
 static char translator2_language[20] = { 0 };
 
+#ifndef XOUS
 FILE *f_trans = NULL; // phoneme output text
+#endif
 int option_tone_flags = 0; // bit 8=emphasize allcaps, bit 9=emphasize penultimate stress
 int option_phonemes = 0;
 int option_phoneme_events = 0;
@@ -776,10 +778,12 @@ static int TranslateWord3(Translator *tr, char *word_start, WORD_TAB *wtab, char
 							end_type = end2;
 							strcpy(phonemes, phonemes2);
 							strcpy(end_phonemes, end_phonemes2);
+#ifndef XOUS
 							if (option_phonemes & espeakPHONEMES_TRACE) {
 								DecodePhonemes(end_phonemes, end_phonemes2);
 								fprintf(f_trans, "  suffix [%s]\n\n", end_phonemes2);
 							}
+#endif
 						}
 						confirm_prefix = false;
 						continue;
@@ -1801,9 +1805,10 @@ static int SubstituteChar(Translator *tr, unsigned int c, unsigned int next_in, 
 	if (to == NULL)
 		return c; // no substitution
 
+#ifndef XOUS
 	if (option_phonemes & espeakPHONEMES_TRACE)
 		fprintf(f_trans, "Replace: %s > %s\n", from, to);
-
+#endif
 	to += utf8_in((int *)&new_c, to);
 	if (*to != 0) {
 		// there is a second character to be inserted

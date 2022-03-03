@@ -66,6 +66,7 @@ int seq_len_adjust;
 
 static espeak_ng_STATUS ReadPhFile(void **ptr, const char *fname, int *size, espeak_ng_ERROR_CONTEXT *context)
 {
+#ifndef XOUS
 	if (!ptr) return EINVAL;
 
 	FILE *f_in;
@@ -98,6 +99,7 @@ static espeak_ng_STATUS ReadPhFile(void **ptr, const char *fname, int *size, esp
 	fclose(f_in);
 	if (size != NULL)
 		*size = length;
+#endif
 	return ENS_OK;
 }
 
@@ -111,18 +113,21 @@ espeak_ng_STATUS LoadPhData(int *srate, espeak_ng_ERROR_CONTEXT *context)
 	unsigned char *p;
 
 	espeak_ng_STATUS status;
-	//if ((status = ReadPhFile((void **)&phoneme_tab_data, "phontab", NULL, context)) != ENS_OK)
-	//	return status;
-	//if ((status = ReadPhFile((void **)&phoneme_index, "phonindex", NULL, context)) != ENS_OK)
-	//	return status;
-	//if ((status = ReadPhFile((void **)&phondata_ptr, "phondata", NULL, context)) != ENS_OK)
-	//	return status;
-	//if ((status = ReadPhFile((void **)&tunes, "intonations", &length, context)) != ENS_OK)
-	//	return status;
+#ifdef XOUS
 	tunes = (TUNE *) intonations_data;
 	length = sizeof(intonations_data);
 	wavefile_data = (unsigned char *)phondata_ptr;
 	n_tunes = length / sizeof(TUNE);
+#else
+	if ((status = ReadPhFile((void **)&phoneme_tab_data, "phontab", NULL, context)) != ENS_OK)
+		return status;
+	if ((status = ReadPhFile((void **)&phoneme_index, "phonindex", NULL, context)) != ENS_OK)
+		return status;
+	if ((status = ReadPhFile((void **)&phondata_ptr, "phondata", NULL, context)) != ENS_OK)
+		return status;
+	if ((status = ReadPhFile((void **)&tunes, "intonations", &length, context)) != ENS_OK)
+		return status;
+#endif
 
 	// read the version number and sample rate from the first 8 bytes of phondata
 	version = 0; // bytes 0-3, version number
@@ -161,7 +166,7 @@ espeak_ng_STATUS LoadPhData(int *srate, espeak_ng_ERROR_CONTEXT *context)
 
 void FreePhData(void)
 {
-	/*
+#ifndef XOUS
 	free(phoneme_tab_data);
 	free(phoneme_index);
 	free(phondata_ptr);
@@ -170,7 +175,7 @@ void FreePhData(void)
 	phoneme_index = NULL;
 	phondata_ptr = NULL;
 	tunes = NULL;
-	*/
+#endif
 }
 
 int PhonemeCode(unsigned int mnem)
@@ -396,6 +401,7 @@ int SelectPhonemeTableName(const char *name)
 
 void LoadConfig(void)
 {
+#ifndef XOUS
 	// Load configuration file, if one exists
 	char buf[sizeof(path_home)+10];
 	FILE *f;
@@ -424,6 +430,7 @@ void LoadConfig(void)
 		}
 	}
 	fclose(f);
+#endif
 }
 
 static void InvalidInstn(PHONEME_TAB *ph, int instn)
