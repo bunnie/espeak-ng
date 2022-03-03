@@ -42,6 +42,7 @@
 #include "synthesize.h"           // for PHONEME_LIST2, N_PHONEME_LIST, PHON...
 #include "ucd/ucd.h"              // for ucd_toupper
 #include "voice.h"                // for voice, voice_t
+#include "libc.h"
 
 Translator *translator = NULL; // the main translator
 Translator *translator2 = NULL; // secondary translator for certain words
