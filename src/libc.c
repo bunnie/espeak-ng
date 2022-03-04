@@ -18,6 +18,10 @@
 
 #include "libc.h"
 
+void  _putchar(char c) {
+    libc_putchar(c);
+}
+
 // much code ganked from https://android.googlesource.com/platform/bionic/+/ics-mr0/libc/ (BSD 3-clause)
 
 // 'ntoa' conversion buffer size, this must be big enough to hold one converted

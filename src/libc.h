@@ -36,4 +36,6 @@ extern  void*  malloc(size_t);
 //extern  void*  calloc(size_t, size_t);
 extern  void*  realloc(void *, size_t);
 extern  void   free(void *);
-extern void  _putchar(char c);
+
+extern void libc_putchar(char c);
+void  _putchar(char c);
