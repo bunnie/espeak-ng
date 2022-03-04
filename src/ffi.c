@@ -23,6 +23,9 @@
 #include "libespeak-ng/wavegen.h"
 #include "libespeak-ng/synthesize.h"
 #include "libespeak-ng/synthdata.h"
+#ifdef NO_STD
+#include "libc.h"
+#endif
 
 static espeak_ERROR status_to_espeak_error(espeak_ng_STATUS status)
 {

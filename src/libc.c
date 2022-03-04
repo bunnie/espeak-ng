@@ -14,10 +14,11 @@
 #include <unistd.h>
 #include <wchar.h>
 #include <float.h>
+#include <limits.h>
 
 #include "libc.h"
 
-
+// much code ganked from https://android.googlesource.com/platform/bionic/+/ics-mr0/libc/ (BSD 3-clause)
 
 // 'ntoa' conversion buffer size, this must be big enough to hold one converted
 // numeric number including padded zeros (dynamically created on stack)
@@ -183,24 +184,13 @@ strncpy(char *dst, const char *src, size_t n)
 	return (dst);
 }
 
-/*
- * Convert a string to a quad integer.
- *
- * Ignores `locale' stuff.  Assumes that the upper and lower case
- * alphabets and digits are each contiguous.
- */
-quad_t
-strtoq(nptr, endptr, base)
-	const char *nptr;
-	char **endptr;
-	register int base;
+long
+strtol(const char *nptr, char **endptr, int base)
 {
-	register const char *s;
-	register u_quad_t acc;
-	register int c;
-	register u_quad_t qbase, cutoff;
-	register int neg, any, cutlim;
-
+	const char *s;
+	long acc, cutoff;
+	int c;
+	int neg, any, cutlim;
 	/*
 	 * Skip white space and pick up leading +/- sign if any.
 	 * If base is 0, allow 0x for hex and 0 for octal, else
@@ -208,7 +198,7 @@ strtoq(nptr, endptr, base)
 	 */
 	s = nptr;
 	do {
-		c = *s++;
+		c = (unsigned char) *s++;
 	} while (isspace(c));
 	if (c == '-') {
 		neg = 1;
@@ -226,7 +216,6 @@ strtoq(nptr, endptr, base)
 	}
 	if (base == 0)
 		base = c == '0' ? 8 : 10;
-
 	/*
 	 * Compute the cutoff value between legal numbers and illegal
 	 * numbers.  That is the largest legal value, divided by the
@@ -234,22 +223,27 @@ strtoq(nptr, endptr, base)
 	 * followed by a legal input character, is too big.  One that
 	 * is equal to this value may be valid or not; the limit
 	 * between valid and invalid numbers is then based on the last
-	 * digit.  For instance, if the range for quads is
-	 * [-9223372036854775808..9223372036854775807] and the input base
-	 * is 10, cutoff will be set to 922337203685477580 and cutlim to
-	 * either 7 (neg==0) or 8 (neg==1), meaning that if we have
-	 * accumulated a value > 922337203685477580, or equal but the
-	 * next digit is > 7 (or 8), the number is too big, and we will
-	 * return a range error.
+	 * digit.  For instance, if the range for longs is
+	 * [-2147483648..2147483647] and the input base is 10,
+	 * cutoff will be set to 214748364 and cutlim to either
+	 * 7 (neg==0) or 8 (neg==1), meaning that if we have accumulated
+	 * a value > 214748364, or equal but the next digit is > 7 (or 8),
+	 * the number is too big, and we will return a range error.
 	 *
 	 * Set any if any `digits' consumed; make it negative to indicate
 	 * overflow.
 	 */
-	qbase = (unsigned)base;
-	cutoff = neg ? -(u_quad_t)QUAD_MIN : QUAD_MAX;
-	cutlim = cutoff % qbase;
-	cutoff /= qbase;
-	for (acc = 0, any = 0;; c = *s++) {
+	cutoff = neg ? LONG_MIN : LONG_MAX;
+	cutlim = cutoff % base;
+	cutoff /= base;
+	if (neg) {
+		if (cutlim > 0) {
+			cutlim -= base;
+			cutoff += 1;
+		}
+		cutlim = -cutlim;
+	}
+	for (acc = 0, any = 0;; c = (unsigned char) *s++) {
 		if (isdigit(c))
 			c -= '0';
 		else if (isalpha(c))
@@ -258,53 +252,53 @@ strtoq(nptr, endptr, base)
 			break;
 		if (c >= base)
 			break;
-		if (any < 0 || acc > cutoff || acc == cutoff && c > cutlim)
-			any = -1;
-		else {
-			any = 1;
-			acc *= qbase;
-			acc += c;
+		if (any < 0)
+			continue;
+		if (neg) {
+			if (acc < cutoff || (acc == cutoff && c > cutlim)) {
+				any = -1;
+				acc = LONG_MIN;
+				errno = ERANGE;
+			} else {
+				any = 1;
+				acc *= base;
+				acc -= c;
+			}
+		} else {
+			if (acc > cutoff || (acc == cutoff && c > cutlim)) {
+				any = -1;
+				acc = LONG_MAX;
+				errno = ERANGE;
+			} else {
+				any = 1;
+				acc *= base;
+				acc += c;
+			}
 		}
 	}
-	if (any < 0) {
-		acc = neg ? QUAD_MIN : QUAD_MAX;
-		errno = ERANGE;
-	} else if (neg)
-		acc = -acc;
 	if (endptr != 0)
-		*endptr = (char *)(any ? s - 1 : nptr);
+		*endptr = (char *) (any ? s - 1 : nptr);
 	return (acc);
 }
 
-/*
- * Convert a string to an unsigned quad integer.
- *
- * Ignores `locale' stuff.  Assumes that the upper and lower case
- * alphabets and digits are each contiguous.
- */
-u_quad_t
-strtouq(nptr, endptr, base)
-	const char *nptr;
-	char **endptr;
-	register int base;
+unsigned long
+strtoul(const char *nptr, char **endptr, int base)
 {
-	register const char *s = nptr;
-	register u_quad_t acc;
-	register int c;
-	register u_quad_t qbase, cutoff;
-	register int neg, any, cutlim;
-
+	const char *s;
+	unsigned long acc, cutoff;
+	int c;
+	int neg, any, cutlim;
 	/*
-	 * See strtoq for comments as to the logic used.
+	 * See strtol for comments as to the logic used.
 	 */
 	s = nptr;
 	do {
-		c = *s++;
+		c = (unsigned char) *s++;
 	} while (isspace(c));
 	if (c == '-') {
 		neg = 1;
 		c = *s++;
-	} else { 
+	} else {
 		neg = 0;
 		if (c == '+')
 			c = *s++;
@@ -317,10 +311,9 @@ strtouq(nptr, endptr, base)
 	}
 	if (base == 0)
 		base = c == '0' ? 8 : 10;
-	qbase = (unsigned)base;
-	cutoff = (u_quad_t)UQUAD_MAX / qbase;
-	cutlim = (u_quad_t)UQUAD_MAX % qbase;
-	for (acc = 0, any = 0;; c = *s++) {
+	cutoff = ULONG_MAX / (unsigned long)base;
+	cutlim = ULONG_MAX % (unsigned long)base;
+	for (acc = 0, any = 0;; c = (unsigned char) *s++) {
 		if (isdigit(c))
 			c -= '0';
 		else if (isalpha(c))
@@ -329,21 +322,22 @@ strtouq(nptr, endptr, base)
 			break;
 		if (c >= base)
 			break;
-		if (any < 0 || acc > cutoff || acc == cutoff && c > cutlim)
+		if (any < 0)
+			continue;
+		if (acc > cutoff || (acc == cutoff && c > cutlim)) {
 			any = -1;
-		else {
+			acc = ULONG_MAX;
+			errno = ERANGE;
+		} else {
 			any = 1;
-			acc *= qbase;
+			acc *= (unsigned long)base;
 			acc += c;
 		}
 	}
-	if (any < 0) {
-		acc = UQUAD_MAX;
-		errno = ERANGE;
-	} else if (neg)
+	if (neg && any > 0)
 		acc = -acc;
 	if (endptr != 0)
-		*endptr = (char *)(any ? s - 1 : nptr);
+		*endptr = (char *) (any ? s - 1 : nptr);
 	return (acc);
 }
 
@@ -416,6 +410,17 @@ strtoumax(const char *nptr, char **endptr, int base)
 	if (endptr != 0)
 		*endptr = (char *) (any ? s - 1 : nptr);
 	return (acc);
+}
+static inline int digitval(int ch)
+{
+    unsigned  d;
+    d = (unsigned)(ch - '0');
+    if (d < 10) return (int)d;
+    d = (unsigned)(ch - 'a');
+    if (d < 6) return (int)(d+10);
+    d = (unsigned)(ch - 'A');
+    if (d < 6) return (int)(d+10);
+    return -1;
 }
 uintmax_t
 strntoumax(const char *nptr, char **endptr, int base, size_t n)
@@ -514,7 +519,7 @@ strtoimax(const char *nptr, char **endptr, int base)
 	 * overflow.
 	 */
 	/* BIONIC: avoid division and module for common cases */
-#define  CASE_BASE(x) \
+#define  CASE_BASE2(x) \
             case x:  \
 	        if (neg) { \
                     cutlim = INTMAX_MIN % x; \
@@ -535,9 +540,9 @@ strtoimax(const char *nptr, char **endptr, int base)
                     cutoff = INTMAX_MAX / 4;
                 }
                 break;
-	    CASE_BASE(8);
-	    CASE_BASE(10);
-	    CASE_BASE(16);
+	    CASE_BASE2(8);
+	    CASE_BASE2(10);
+	    CASE_BASE2(16);
 	    default:
 	              cutoff  = neg ? INTMAX_MIN : INTMAX_MAX;
 		      cutlim  = cutoff % base;
@@ -1445,4 +1450,85 @@ int vprintf_(const char* format, va_list va)
 int vsnprintf_(char* buffer, size_t count, const char* format, va_list va)
 {
   return _vsnprintf(_out_buffer, buffer, count, format, va);
+}
+
+typedef	long word;		/* "word" used for optimal copy speed */
+#define	wsize	sizeof(word)
+#define	wmask	(wsize - 1)
+
+#ifdef MEMCOPY
+void *
+memcpy(void *dst0, const void *src0, size_t length)
+#else
+#ifdef MEMMOVE
+void *
+memmove(void *dst0, const void *src0, size_t length)
+#else
+void
+bcopy(const void *src0, void *dst0, size_t length)
+#endif
+#endif
+{
+	char *dst = dst0;
+	const char *src = src0;
+	size_t t;
+	if (length == 0 || dst == src)		/* nothing to do */
+		goto done;
+	/*
+	 * Macros: loop-t-times; and loop-t-times, t>0
+	 */
+#define	TLOOP(s) if (t) TLOOP1(s)
+#define	TLOOP1(s) do { s; } while (--t)
+	if ((unsigned long)dst < (unsigned long)src) {
+		/*
+		 * Copy forward.
+		 */
+		t = (long)src;	/* only need low bits */
+		if ((t | (long)dst) & wmask) {
+			/*
+			 * Try to align operands.  This cannot be done
+			 * unless the low bits match.
+			 */
+			if ((t ^ (long)dst) & wmask || length < wsize)
+				t = length;
+			else
+				t = wsize - (t & wmask);
+			length -= t;
+			TLOOP1(*dst++ = *src++);
+		}
+		/*
+		 * Copy whole words, then mop up any trailing bytes.
+		 */
+		t = length / wsize;
+		TLOOP(*(word *)dst = *(word *)src; src += wsize; dst += wsize);
+		t = length & wmask;
+		TLOOP(*dst++ = *src++);
+	} else {
+		/*
+		 * Copy backwards.  Otherwise essentially the same.
+		 * Alignment works as before, except that it takes
+		 * (t&wmask) bytes to align, not wsize-(t&wmask).
+		 */
+		src += length;
+		dst += length;
+		t = (long)src;
+		if ((t | (long)dst) & wmask) {
+			if ((t ^ (long)dst) & wmask || length <= wsize)
+				t = length;
+			else
+				t &= wmask;
+			length -= t;
+			TLOOP1(*--dst = *--src);
+		}
+		t = length / wsize;
+		TLOOP(src -= wsize; dst -= wsize; *(word *)dst = *(word *)src);
+		t = length & wmask;
+		TLOOP(*--dst = *--src);
+	}
+done:
+#if defined(MEMCOPY) || defined(MEMMOVE)
+	return (dst0);
+#else
+	return;
+#endif
 }

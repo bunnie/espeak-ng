@@ -1,16 +1,8 @@
 #include "libc.h"
+#include <stddef.h>
 #include <sys/cdefs.h>
 #include <ctype.h>
 
-#if 0 /* XXX coming soon */
-#include <ctype.h>
-#else
-static inline int
-isspace(char c)
-{
-	return (c == ' ' || c == '\t' || c == '\n' || c == '\12');
-}
-#endif
 #include <stdarg.h>
 #include <string.h>
 #include <sys/param.h>
@@ -51,7 +43,8 @@ isspace(char c)
 #define	CT_STRING	2	/* %s conversion */
 #define	CT_INT		3	/* %[dioupxX] conversion */
 
-static const u_char *__sccl(char *, const u_char *);
+static const unsigned char *__sccl(char *, const unsigned char *);
+int vsscanf(const char *inp, char const *fmt0, va_list ap);
 
 int
 sscanf(const char *ibuf, const char *fmt, ...)
@@ -69,7 +62,7 @@ int
 vsscanf(const char *inp, char const *fmt0, va_list ap)
 {
 	int inr;
-	const u_char *fmt = (const u_char *)fmt0;
+	const unsigned char *fmt = (const unsigned char *)fmt0;
 	int c;			/* character from format, or conversion */
 	size_t width;		/* field width, or 0 */
 	char *p;		/* points into all kinds of strings */
@@ -88,7 +81,7 @@ vsscanf(const char *inp, char const *fmt0, va_list ap)
 		{ 10, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16 };
 
 	inr = strlen(inp);
-	
+
 	nassigned = 0;
 	nconversions = 0;
 	nread = 0;
@@ -202,22 +195,6 @@ literal:
 			flags |= UNSIGNED;
 			base = 16;
 			break;
-
-		case 'n':
-			nconversions++;
-			if (flags & SUPPRESS)	/* ??? */
-				continue;
-			if (flags & SHORTSHORT)
-				*va_arg(ap, char *) = nread;
-			else if (flags & SHORT)
-				*va_arg(ap, short *) = nread;
-			else if (flags & LONG)
-				*va_arg(ap, long *) = nread;
-			else if (flags & LONGLONG)
-				*va_arg(ap, long long *) = nread;
-			else
-				*va_arg(ap, int *) = nread;
-			continue;
 		}
 
 		/*
@@ -470,20 +447,20 @@ literal:
 				}
 				goto match_failure;
 			}
-			c = ((u_char *)p)[-1];
+			c = ((unsigned char *)p)[-1];
 			if (c == 'x' || c == 'X') {
 				--p;
 				inp--;
 				inr++;
 			}
 			if ((flags & SUPPRESS) == 0) {
-				u_quad_t res;
+				unsigned long res;
 
 				*p = 0;
 				if ((flags & UNSIGNED) == 0)
-				    res = strtoq(buf, (char **)NULL, base);
+				    res = strtol(buf, (char **)NULL, base);
 				else
-				    res = strtouq(buf, (char **)NULL, base);
+				    res = strtoul(buf, (char **)NULL, base);
 				if (flags & POINTER)
 					*va_arg(ap, void **) =
 						(void *)(uintptr_t)res;
@@ -493,8 +470,6 @@ literal:
 					*va_arg(ap, short *) = res;
 				else if (flags & LONG)
 					*va_arg(ap, long *) = res;
-				else if (flags & LONGLONG)
-					*va_arg(ap, long long *) = res;
 				else
 					*va_arg(ap, int *) = res;
 				nassigned++;
@@ -517,8 +492,8 @@ match_failure:
  * closing `]'.  The table has a 1 wherever characters should be
  * considered part of the scanset.
  */
-static const u_char *
-__sccl(char *tab, const u_char *fmt)
+static const unsigned char *
+__sccl(char *tab, const unsigned char *fmt)
 {
 	int c, n, v;
 
@@ -531,7 +506,7 @@ __sccl(char *tab, const u_char *fmt)
 		v = 0;		/* default => reject */
 
 	/* XXX: Will not work if sizeof(tab*) > sizeof(char) */
-	(void) memset(tab, v, 256);
+	memset((void *) tab, v, 256);
 
 	if (c == 0)
 		return (fmt - 1);/* format ended before closing ] */

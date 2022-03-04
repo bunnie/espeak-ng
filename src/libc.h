@@ -1,4 +1,5 @@
 #include <stdint.h>
+#include <stddef.h>
 
 char*  strcpy(char *, const char *);
 char*  strchr(const char *, int);
@@ -26,8 +27,13 @@ char *strtok(char *s, const char *delim);
 int	 sscanf(const char *, const char *, ...);
 char *strtok_r(char *s, const char *delim, char **last);
 intmax_t strtoimax(const char *nptr, char **endptr, int base);
+unsigned long strtoul(const char *nptr, char **endptr, int base);
+long strtol(const char *nptr, char **endptr, int base);
+void bcopy(const void *src0, void *dst0, size_t length);
+
 
 extern  void*  malloc(size_t);
 //extern  void*  calloc(size_t, size_t);
 extern  void*  realloc(void *, size_t);
 extern  void   free(void *);
+extern void  _putchar(char c);
