@@ -1,6 +1,9 @@
 #include <stdint.h>
 #include <stddef.h>
 
+wchar_t *wcschr(const wchar_t *s, wchar_t c);
+size_t wcslen(const wchar_t *s);
+char *strstr(const char *s, const char *find);
 char*  strcpy(char *, const char *);
 char*  strchr(const char *, int);
 int    strcmp(const char *, const char *);
@@ -31,6 +34,8 @@ unsigned long strtoul(const char *nptr, char **endptr, int base);
 long strtol(const char *nptr, char **endptr, int base);
 void bcopy(const void *src0, void *dst0, size_t length);
 
+// this is a lie, we don't have an errno, but we always return...something.
+int*   __errno(void);
 
 extern  void*  malloc(size_t);
 //extern  void*  calloc(size_t, size_t);
@@ -39,3 +44,6 @@ extern  void   free(void *);
 
 extern void libc_putchar(char c);
 void  _putchar(char c);
+
+#define RAND_MAX 0x7fffffff
+long rand(void);

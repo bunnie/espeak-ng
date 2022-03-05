@@ -67,7 +67,8 @@ int espeak_ffi_setup(t_espeak_callback* SynthCallback) {
 	// It seems that the wctype functions don't work until the locale has been set
 	// to something other than the default "C".  Then, not only Latin1 but also the
 	// other characters give the correct results with iswalpha() etc.
-    setlocale(LC_CTYPE, "");
+    // setlocale(LC_CTYPE, "");
+	printf("hello world from C land!\n");
 
 	espeak_ng_STATUS result = LoadPhData(&srate, NULL);
 	if (result != ENS_OK) {
@@ -113,9 +114,9 @@ int espeak_ffi_setup(t_espeak_callback* SynthCallback) {
 }
 
 // size includes trailing \0
-espeak_ng_STATUS espeak_ffi_synth(char *text, unsigned int size) {
+espeak_ng_STATUS espeak_ffi_synth(char *text, unsigned int size, void *user_data) {
 	int synth_flags = espeakCHARS_AUTO | espeakPHONEMES | espeakENDPAUSE;
-    return espeak_Synth(text, size, 0, POS_CHARACTER, 0, synth_flags, NULL, NULL);
+    return espeak_Synth(text, size, 0, POS_CHARACTER, 0, synth_flags, NULL, user_data);
 }
 
 espeak_ng_STATUS espeak_ffi_sync(void) {

@@ -29,7 +29,88 @@ void  _putchar(char c) {
 #endif
 }
 
+#define	RAND48_SEED_0	(0x330e)
+#define	RAND48_SEED_1	(0xabcd)
+#define	RAND48_SEED_2	(0x1234)
+#define	RAND48_MULT_0	(0xe66d)
+#define	RAND48_MULT_1	(0xdeec)
+#define	RAND48_MULT_2	(0x0005)
+#define	RAND48_ADD	(0x000b)
+unsigned short __rand48_seed[3] = {
+	RAND48_SEED_0,
+	RAND48_SEED_1,
+	RAND48_SEED_2
+};
+unsigned short __rand48_mult[3] = {
+	RAND48_MULT_0,
+	RAND48_MULT_1,
+	RAND48_MULT_2
+};
+unsigned short __rand48_add = RAND48_ADD;
+void
+__dorand48(unsigned short xseed[3])
+{
+	unsigned long accu;
+	unsigned short temp[2];
+	accu = (unsigned long) __rand48_mult[0] * (unsigned long) xseed[0] +
+	 (unsigned long) __rand48_add;
+	temp[0] = (unsigned short) accu;	/* lower 16 bits */
+	accu >>= sizeof(unsigned short) * 8;
+	accu += (unsigned long) __rand48_mult[0] * (unsigned long) xseed[1] +
+	 (unsigned long) __rand48_mult[1] * (unsigned long) xseed[0];
+	temp[1] = (unsigned short) accu;	/* middle 16 bits */
+	accu >>= sizeof(unsigned short) * 8;
+	accu += __rand48_mult[0] * xseed[2] + __rand48_mult[1] * xseed[1] + __rand48_mult[2] * xseed[0];
+	xseed[0] = temp[0];
+	xseed[1] = temp[1];
+	xseed[2] = (unsigned short) accu;
+}
+long
+rand(void)
+{
+	__dorand48(__rand48_seed);
+	return ((long) __rand48_seed[2] << 15) + ((long) __rand48_seed[1] >> 1);
+}
 // much code ganked from https://android.googlesource.com/platform/bionic/+/ics-mr0/libc/ (BSD 3-clause)
+
+#define CTYPE_NUM_CHARS       256
+const char _ctype_[1 + CTYPE_NUM_CHARS] = {
+	0,
+	_C,	_C,	_C,	_C,	_C,	_C,	_C,	_C,
+	_C,	_C|_S,	_C|_S,	_C|_S,	_C|_S,	_C|_S,	_C,	_C,
+	_C,	_C,	_C,	_C,	_C,	_C,	_C,	_C,
+	_C,	_C,	_C,	_C,	_C,	_C,	_C,	_C,
+   _S|(char)_B,	_P,	_P,	_P,	_P,	_P,	_P,	_P,
+	_P,	_P,	_P,	_P,	_P,	_P,	_P,	_P,
+	_N,	_N,	_N,	_N,	_N,	_N,	_N,	_N,
+	_N,	_N,	_P,	_P,	_P,	_P,	_P,	_P,
+	_P,	_U|_X,	_U|_X,	_U|_X,	_U|_X,	_U|_X,	_U|_X,	_U,
+	_U,	_U,	_U,	_U,	_U,	_U,	_U,	_U,
+	_U,	_U,	_U,	_U,	_U,	_U,	_U,	_U,
+	_U,	_U,	_U,	_P,	_P,	_P,	_P,	_P,
+	_P,	_L|_X,	_L|_X,	_L|_X,	_L|_X,	_L|_X,	_L|_X,	_L,
+	_L,	_L,	_L,	_L,	_L,	_L,	_L,	_L,
+	_L,	_L,	_L,	_L,	_L,	_L,	_L,	_L,
+	/* determine printability based on the IS0 8859 8-bit standard */
+	_L,	_L,	_L,	_P,	_P,	_P,	_P,	_C,
+	_C,	_C,	_C,	_C,	_C,	_C,	_C,	_C, /* 80 */
+	_C,	_C,	_C,	_C,	_C,	_C,	_C,	_C, /* 88 */
+	_C,	_C,	_C,	_C,	_C,	_C,	_C,	_C, /* 90 */
+	_C,	_C,	_C,	_C,	_C,	_C,	_C,	_C, /* 98 */
+	_P,	_P,	_P,	_P,	_P,	_P,	_P,	_P, /* A0 */
+	_P,	_P,	_P,	_P,	_P,	_P,	_P,	_P, /* A8 */
+	_P,	_P,	_P,	_P,	_P,	_P,	_P,	_P, /* B0 */
+	_P,	_P,	_P,	_P,	_P,	_P,	_P,	_P, /* B8 */
+	_P,	_P,	_P,	_P,	_P,	_P,	_P,	_P, /* C0 */
+	_P,	_P,	_P,	_P,	_P,	_P,	_P,	_P, /* C8 */
+	_P,	_P,	_P,	_P,	_P,	_P,	_P,	_P, /* D0 */
+	_P,	_P,	_P,	_P,	_P,	_P,	_P,	_P, /* D8 */
+	_P,	_P,	_P,	_P,	_P,	_P,	_P,	_P, /* E0 */
+	_P,	_P,	_P,	_P,	_P,	_P,	_P,	_P, /* E8 */
+	_P,	_P,	_P,	_P,	_P,	_P,	_P,	_P, /* F0 */
+	_P,	_P,	_P,	_P,	_P,	_P,	_P,	_P  /* F8 */
+};
+//const char *_ctype_ = _C_ctype_;
 
 // 'ntoa' conversion buffer size, this must be big enough to hold one converted
 // numeric number including padded zeros (dynamically created on stack)
@@ -98,7 +179,59 @@ void  _putchar(char c) {
 #define FLAGS_PRECISION (1U << 10U)
 #define FLAGS_ADAPT_EXP (1U << 11U)
 
+int local_errno = 134; // ENOTSUP
 
+int*   __errno(void) {
+    return &local_errno;
+}
+wchar_t *
+wcschr(const wchar_t *s, wchar_t c)
+{
+	while (*s != c && *s != L'\0')
+		s++;
+	if (*s == c)
+		return ((wchar_t *)s);
+	return (NULL);
+}
+size_t
+wcslen(const wchar_t *s)
+{
+	const wchar_t *p;
+	p = s;
+	while (*p)
+		p++;
+	return p - s;
+}
+int
+strncmp(const char *s1, const char *s2, size_t n)
+{
+	if (n == 0)
+		return (0);
+	do {
+		if (*s1 != *s2++)
+			return (*(unsigned char *)s1 - *(unsigned char *)--s2);
+		if (*s1++ == 0)
+			break;
+	} while (--n != 0);
+	return (0);
+}
+char *
+strstr(const char *s, const char *find)
+{
+	char c, sc;
+	size_t len;
+	if ((c = *find++) != 0) {
+		len = strlen(find);
+		do {
+			do {
+				if ((sc = *s++) == 0)
+					return (NULL);
+			} while (sc != c);
+		} while (strncmp(s, find, len) != 0);
+		s--;
+	}
+	return ((char *)s);
+}
 char *
 strchr (register const char *s, int c)
 {
