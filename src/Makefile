@@ -22,15 +22,15 @@ CSRC = \
     libespeak-ng/synth_mbrola.c \
     libespeak-ng/phoneme.c \
     libespeak-ng/phonemelist.c \
-    libespeak-ng/compiledict.c \
     libespeak-ng/mnemonics.c \
     libespeak-ng/error.c \
     ucd-tools/src/case.c \
     ucd-tools/src/categories.c \
     ucd-tools/src/proplist.c \
-    ucd-tools/src/ctype.c
+    ucd-tools/src/ctype.c \
+	libc.c
 
-
+#   libespeak-ng/compiledict.c \
 #   ucd-tools/src/scripts.c \
 #   ucd-tools/src/tostring.c \
 #   libespeak-ng/compiledata.c \
@@ -100,7 +100,7 @@ OD   = $(TRGT)objdump
 SZ   = $(TRGT)size
 
 # macros
-DEFS = -DXOUS
+DEFS = -DXOUS -DNO_STD -DLOCAL_TEST
 
 # Define C warning options here
 CWARN = -Wall -Wextra -Wundef -Wstrict-prototypes

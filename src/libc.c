@@ -1,3 +1,6 @@
+#ifdef LOCAL_TEST
+#include "../config.h"
+#endif
 #include <stddef.h>
 #include <stdarg.h>
 #include <assert.h>
@@ -19,7 +22,11 @@
 #include "libc.h"
 
 void  _putchar(char c) {
-    libc_putchar(c);
+#ifdef LOCAL_TEST
+  putchar(c);
+#else
+  libc_putchar(c);
+#endif
 }
 
 // much code ganked from https://android.googlesource.com/platform/bionic/+/ics-mr0/libc/ (BSD 3-clause)
