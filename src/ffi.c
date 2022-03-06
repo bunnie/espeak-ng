@@ -60,6 +60,10 @@ const int ffi_param_defaults[N_SPEECH_PARAM] = {
 	0,   // voice type
 };
 
+int ffi_add(int a) {
+	return a + 1;
+}
+
 void ffi_sanity() {
 	printf("hello world from C land!\n");
 }
