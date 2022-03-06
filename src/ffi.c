@@ -60,6 +60,10 @@ const int ffi_param_defaults[N_SPEECH_PARAM] = {
 	0,   // voice type
 };
 
+void ffi_sanity() {
+	printf("hello world from C land!\n");
+}
+
 int espeak_ffi_setup(t_espeak_callback* SynthCallback) {
 	int param;
 	int srate = 8000; // default sample rate 22050 Hz -- looks like a small "project" to modify to 8000Hz
