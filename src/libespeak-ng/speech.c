@@ -250,7 +250,7 @@ int sync_espeak_terminated_msg(uint32_t unique_identifier, void *user_data)
 
 #endif
 
-#ifndef XOUS
+#ifndef EMBEDDED
 static int check_data_path(const char *path, int allow_directory)
 {
 	if (!path) return 0;
@@ -307,7 +307,7 @@ ESPEAK_NG_API espeak_ng_STATUS espeak_ng_InitializeOutput(espeak_ng_OUTPUT_MODE 
 	return ENS_OK;
 }
 
-#ifndef XOUS
+#ifndef EMBEDDED
 int GetFileLength(const char *filename)
 {
 	struct stat statbuf;
@@ -846,7 +846,7 @@ ESPEAK_NG_API espeak_ng_STATUS espeak_ng_SetPunctuationList(const wchar_t *punct
 #endif
 }
 
-#ifndef XOUS
+#ifndef EMBEDDED
 ESPEAK_API void espeak_SetPhonemeTrace(int phonememode, FILE *stream)
 {
 	/* phonememode:  Controls the output of phoneme symbols for the text

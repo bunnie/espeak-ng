@@ -65,7 +65,7 @@ __dorand48(unsigned short xseed[3])
 	xseed[1] = temp[1];
 	xseed[2] = (unsigned short) accu;
 }
-long
+int
 rand(void)
 {
 	__dorand48(__rand48_seed);

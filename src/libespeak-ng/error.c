@@ -147,7 +147,7 @@ espeak_ng_GetStatusCodeMessage(espeak_ng_STATUS status,
 		break;
 	}
 }
-#ifndef XOUS
+#ifndef EMBEDDED
 ESPEAK_NG_API void
 espeak_ng_PrintStatusCodeMessage(espeak_ng_STATUS status,
                                  FILE *out,

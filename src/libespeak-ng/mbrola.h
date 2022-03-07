@@ -56,7 +56,7 @@ int MbrolaFill(int length,
 		int amplitude);
 
 void MbrolaReset(void);
-#ifndef XOUS
+#ifndef EMBEDDED
 int MbrolaTranslate(PHONEME_LIST *plist, int n_phonemes, bool resume, FILE *f_mbrola);
 #endif
 

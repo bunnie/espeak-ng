@@ -41,8 +41,7 @@ extern  void   free(void *);
 extern void libc_putchar(char c);
 void  _putchar(char c);
 
-#define RAND_MAX 0x7fffffff
-long rand(void);
+int rand(void);
 
 // provided by Rust as a compiler intrinsic. Do not override these.
 extern int    memcmp(const void *, const void *, size_t);

@@ -1099,7 +1099,7 @@ void DoEmbedded(int *embix, int sourceix)
 			SetEmbedded((command & 0x60) + EMBED_S2, value); // adjusts embedded_value[EMBED_S2]
 			SetSpeed(2);
 			break;
-#ifndef XOUS
+#ifndef EMBEDDED
 		case EMBED_I: // play dynamically loaded wav data (sound icon)
 			if ((int)value < n_soundicon_tab) {
 				if (soundicon_tab[value].length != 0) {
@@ -1578,7 +1578,7 @@ int SpeakNextClause(int control)
 
 	if ((option_phonemes & 0xf) || (phoneme_callback != NULL)) {
 		phon_out = GetTranslatedPhonemeString(option_phonemes);
-#ifndef XOUS
+#ifndef EMBEDDED
 		if (option_phonemes & 0xf)
 			fprintf(f_trans, "%s\n", phon_out);
 #endif

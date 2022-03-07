@@ -69,7 +69,7 @@ int seq_len_adjust;
 
 static espeak_ng_STATUS ReadPhFile(void **ptr, const char *fname, int *size, espeak_ng_ERROR_CONTEXT *context)
 {
-#ifndef XOUS
+#ifndef EMBEDDED
 	if (!ptr) return EINVAL;
 
 	FILE *f_in;
@@ -116,7 +116,7 @@ espeak_ng_STATUS LoadPhData(int *srate, espeak_ng_ERROR_CONTEXT *context)
 	unsigned char *p;
 
 	espeak_ng_STATUS status;
-#ifdef XOUS
+#ifdef EMBEDDED
 	tunes = (TUNE *) intonations_data;
 	length = sizeof(intonations_data);
 	wavefile_data = (unsigned char *)phondata_ptr;
@@ -169,7 +169,7 @@ espeak_ng_STATUS LoadPhData(int *srate, espeak_ng_ERROR_CONTEXT *context)
 
 void FreePhData(void)
 {
-#ifndef XOUS
+#ifndef EMBEDDED
 	free(phoneme_tab_data);
 	free(phoneme_index);
 	free(phondata_ptr);
@@ -404,7 +404,7 @@ int SelectPhonemeTableName(const char *name)
 
 void LoadConfig(void)
 {
-#ifndef XOUS
+#ifndef EMBEDDED
 	// Load configuration file, if one exists
 	char buf[sizeof(path_home)+10];
 	FILE *f;

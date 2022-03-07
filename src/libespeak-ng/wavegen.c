@@ -1241,7 +1241,7 @@ static void SetSynth(int length, int modn, frame_t *fr1, frame_t *fr2, voice_t *
 		}
 	}
 }
-#ifndef XOUS
+#ifndef EMBEDDED
 void Write4Bytes(FILE *f, int value)
 {
 	// Write 4 bytes to a file, least significant first

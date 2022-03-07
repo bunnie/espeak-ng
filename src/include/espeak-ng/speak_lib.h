@@ -500,7 +500,7 @@ ESPEAK_API espeak_ERROR espeak_SetPunctuationList(const wchar_t *punctlist);
 #ifdef __cplusplus
 extern "C"
 #endif
-#ifndef XOUS
+#ifndef EMBEDDED
 ESPEAK_API void espeak_SetPhonemeTrace(int phonememode, FILE *stream);
 #endif
 /* phonememode:  Controls the output of phoneme symbols for the text
@@ -546,7 +546,7 @@ ESPEAK_API const char *espeak_TextToPhonemes(const void **textptr, int textmode,
 #ifdef __cplusplus
 extern "C"
 #endif
-#ifndef XOUS
+#ifndef EMBEDDED
 ESPEAK_API void espeak_CompileDictionary(const char *path, FILE *log, int flags);
 #endif
 /* Compile pronunciation dictionary for a language which corresponds to the currently

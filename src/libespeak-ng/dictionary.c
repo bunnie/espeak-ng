@@ -2154,7 +2154,7 @@ static void MatchRule(Translator *tr, char *word[], char *word_start, int group_
 					memcpy(&best, &match, sizeof(match));
 					total_consumed = consumed;
 				}
-#ifndef XOUS
+#ifndef EMBEDDED
 				if ((option_phonemes & espeakPHONEMES_TRACE) && (match.points > 0) && ((word_flags & FLAG_NO_TRACE) == 0)) {
 					// show each rule that matches, and it's points score
 					int pts;
@@ -2226,7 +2226,7 @@ int TranslateRules(Translator *tr, char *p_start, char *phonemes, int ph_size, c
 			break;
 	}
 	word_copy[ix] = 0;
-#ifndef XOUS
+#ifndef EMBEDDED
 	if ((option_phonemes & espeakPHONEMES_TRACE) && ((word_flags & FLAG_NO_TRACE) == 0)) {
 		char wordbuf[120];
 		unsigned int ix;
@@ -2409,7 +2409,7 @@ int TranslateRules(Translator *tr, char *p_start, char *phonemes, int ph_size, c
 				strcpy(phonemes, match1.phonemes);
 				return 0;
 			}
-#ifndef XOUS
+#ifndef EMBEDDED
 			if ((option_phonemes & espeakPHONEMES_TRACE) && ((word_flags & FLAG_NO_TRACE) == 0))
 				fprintf(f_trans, "\n");
 #endif
@@ -2794,7 +2794,7 @@ static const char *LookupDict2(Translator *tr, const char *word, const char *wor
 		}
 
 		if (phoneme_len == 0) {
-#ifndef XOUS
+#ifndef EMBEDDED
 			if (option_phonemes & espeakPHONEMES_TRACE) {
 				print_dictionary_flags(flags, dict_flags_buf, sizeof(dict_flags_buf));
 				fprintf(f_trans, "Flags:  %s  %s\n", word1, dict_flags_buf);
@@ -2817,7 +2817,7 @@ static const char *LookupDict2(Translator *tr, const char *word, const char *wor
 			else
 				textmode = true;
 
-#ifndef XOUS
+#ifndef EMBEDDED
 			if (textmode == translator->langopts.textmode) {
 				// only show this line if the word translates to phonemes, not replacement text
 				if ((dictionary_flags & FLAG_SKIPWORDS) && (wtab != NULL)) {
@@ -2953,7 +2953,7 @@ int LookupDictList(Translator *tr, char **wordptr, char *ph_out, unsigned int *f
 
 				word1 = *wordptr;
 				*wordptr = &word_replacement[2];
-#ifndef XOUS
+#ifndef EMBEDDED
 				if (option_phonemes & espeakPHONEMES_TRACE) {
 					len = found - word1;
 					memcpy(word, word1, len); // include multiple matching words
@@ -3124,7 +3124,7 @@ int RemoveEnding(Translator *tr, char *word, int end_type, char *word_copy)
 
 		if (end_flags & FLAG_SUFX_E_ADDED) {
 			utf8_out(tr->langopts.suffix_add_e, &word_end[1]);
-#ifndef XOUS
+#ifndef EMBEDDED
 			if (option_phonemes & espeakPHONEMES_TRACE)
 				fprintf(f_trans, "add e\n");
 #endif

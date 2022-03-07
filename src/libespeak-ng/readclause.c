@@ -320,7 +320,7 @@ static int AnnouncePunctuation(Translator *tr, int c1, int *c2_ptr, char *output
 	c2 = *c2_ptr;
 	buf[0] = 0;
 
-#ifdef XOUS
+#ifdef EMBEDDED
     if (0) { // no soundicons on Xous
 #else
 	if ((soundicon = LookupSoundicon(c1)) >= 0) {
@@ -592,7 +592,7 @@ int ReadClause(Translator *tr, char *buf, short *charix, int *charix_top, int n_
 
 				if ((c1 <= 0x20) && ((sayas_mode == SAYAS_SINGLE_CHARS) || (sayas_mode == SAYAS_KEY)))
 					c1 += 0xe000; // move into unicode private usage area
-#ifndef XOUS
+#ifndef EMBEDDED
 			} else if (c1 == '<') {
 				if ((c2 == '/') || iswalpha(c2) || c2 == '!' || c2 == '?') {
 					// check for space in the output buffer for embedded commands produced by the SSML tag
@@ -1025,7 +1025,7 @@ void InitText2(void)
 	xmlbase = NULL;
 }
 
-#if XOUS
+#if EMBEDDED
 #include "mnemonics.h"
 // this is pulled from ssml.c
 static MNEM_TAB xml_entity_mnemonics[] = {

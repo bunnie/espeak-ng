@@ -31,7 +31,7 @@
 #if defined(_WIN32) || defined(_WIN64)
 #include <windows.h>
 #else
-#ifndef XOUS
+#ifndef EMBEDDED
 #include <dirent.h>
 #endif
 #endif
@@ -194,7 +194,7 @@ status mature\n\
 tunes s1 c1 q1 e1\n";
 
 static char *fgets_string(char *buf, int size);
-#ifndef XOUS
+#ifndef EMBEDDED
 static char *fgets_strip(char *buf, int size, FILE *f_in);
 #else
 static char *fgets_strip(char *buf, int size);
@@ -220,7 +220,7 @@ static char *fgets_string(char *buf, int size) {
 	return buf;
 }
 
-#ifndef XOUS
+#ifndef EMBEDDED
 static char *fgets_strip(char *buf, int size, FILE *f_in)
 #else
 static char *fgets_strip(char *buf, int size)
@@ -229,7 +229,7 @@ static char *fgets_strip(char *buf, int size)
 	// strip trailing spaces, and truncate lines at // comment
 	int len;
 	char *p;
-#ifndef XOUS
+#ifndef EMBEDDED
 	if (fgets(buf, size, f_in) == NULL)
 		return NULL;
 #else
@@ -312,7 +312,7 @@ void ReadTonePoints(char *string, int *tone_pts)
 	       &tone_pts[8], &tone_pts[9]);
 }
 
-#ifndef XOUS
+#ifndef EMBEDDED
 static espeak_VOICE *ReadVoiceFile(FILE *f_in, const char *fname, int is_language_file)
 {
 	// Read a Voice file, allocate a VOICE_DATA and set data from the
@@ -576,7 +576,7 @@ voice_t *LoadVoice(const char *vname, int control)
         //          bit 8  1 = INTERNAL: compiling phonemes; do not try to
         //                     load the phoneme table
         //          bit 16 1 = UNDOCUMENTED
-#ifndef XOUS
+#ifndef EMBEDDED
 	FILE *f_voice = NULL;
 #endif
 	char *p;
@@ -610,7 +610,7 @@ voice_t *LoadVoice(const char *vname, int control)
 	static char voice_name[40];       // voice name for current_voice_selected
 	static char voice_languages[100]; // list of languages and priorities for current_voice_selected
 
-#ifndef XOUS
+#ifndef EMBEDDED
 	strncpy0(voicename, vname, sizeof(voicename));
 	if (control & 0x10) {
 		strcpy(buf, vname);
@@ -689,7 +689,7 @@ voice_t *LoadVoice(const char *vname, int control)
 #endif
 	VoiceReset(tone_only);
 
-#ifndef XOUS
+#ifndef EMBEDDED
 	while ((f_voice != NULL) && (fgets_strip(buf, sizeof(buf), f_voice) != NULL)) {
 #else
 	while (fgets_strip(buf, sizeof(buf)) != NULL) {
@@ -976,7 +976,7 @@ voice_t *LoadVoice(const char *vname, int control)
 			sscanf(p, "%s %s %d", name1, name2, &srate);
 			espeak_ng_STATUS status = LoadMbrolaTable(name1, name2, &srate);
 			if (status != ENS_OK) {
-#ifndef XOUS
+#ifndef EMBEDDED
 				espeak_ng_PrintStatusCodeMessage(status, stderr, NULL);
 				fclose(f_voice);
 #endif
@@ -1018,7 +1018,7 @@ voice_t *LoadVoice(const char *vname, int control)
 			break;
 		}
 	}
-#ifndef XOUS
+#ifndef EMBEDDED
 	if (f_voice != NULL)
 		fclose(f_voice);
 #endif
@@ -1262,7 +1262,7 @@ static int ScoreVoice(espeak_VOICE *voice_spec, const char *spec_language, int s
 }
 static int SetVoiceScores(espeak_VOICE *voice_select, espeak_VOICE **voices, int control)
 {
-#ifndef XOUS
+#ifndef EMBEDDED
 	// control: bit0=1  include mbrola voices
 	int ix;
 	int score;
@@ -1514,7 +1514,7 @@ char const *SelectVoice(espeak_VOICE *voice_select, int *found)
 
 static void GetVoices(const char *path, int len_path_voices, int is_language_file)
 {
-#ifndef XOUS
+#ifndef EMBEDDED
 	FILE *f_voice;
 	espeak_VOICE *voice_data;
 	int ftype;
