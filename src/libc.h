@@ -11,10 +11,6 @@ char*  strcat(char *, const char *);
 char*  strdup(const char *);
 char*  strncpy(char *, const char *, size_t);
 int atoi(const char *);
-
-int    memcmp(const void *, const void *, size_t);
-void * memcpy (void *dest, const void *src, size_t len);
-void * memset (void *dest, int val, size_t len);
 size_t strlen(const char *);
 
 #define sprintf sprintf_
@@ -47,3 +43,8 @@ void  _putchar(char c);
 
 #define RAND_MAX 0x7fffffff
 long rand(void);
+
+// provided by Rust as a compiler intrinsic. Do not override these.
+extern int    memcmp(const void *, const void *, size_t);
+extern void * memcpy (void *dest, const void *src, size_t len);
+extern void * memset (void *dest, int val, size_t len);

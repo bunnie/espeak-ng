@@ -270,25 +270,6 @@ strcat(char *s, const char *append)
 	return(save);
 }
 
-void *
-memcpy (void *dest, const void *src, size_t len)
-{
-  char *d = dest;
-  const char *s = src;
-  while (len--)
-    *d++ = *s++;
-  return dest;
-}
-
-void *
-memset (void *dest, int val, size_t len)
-{
-  unsigned char *ptr = dest;
-  while (len-- > 0)
-    *ptr++ = val;
-  return dest;
-}
-
 size_t
 strlen(const char *str)
 {
@@ -741,25 +722,6 @@ strtoimax(const char *nptr, char **endptr, int base)
 int  atoi(const char*  s)
 {
     return (int)strtoimax(s, NULL, 10);
-}
-
-int memcmp(const void *s1, const void *s2, size_t n)
-{
-    const unsigned char*  p1   = s1;
-    const unsigned char*  end1 = p1 + n;
-    const unsigned char*  p2   = s2;
-    int                   d = 0;
-    for (;;) {
-        if (d || p1 >= end1) break;
-        d = (int)*p1++ - (int)*p2++;
-        if (d || p1 >= end1) break;
-        d = (int)*p1++ - (int)*p2++;
-        if (d || p1 >= end1) break;
-        d = (int)*p1++ - (int)*p2++;
-        if (d || p1 >= end1) break;
-        d = (int)*p1++ - (int)*p2++;
-    }
-    return d;
 }
 
 char *
@@ -1600,18 +1562,8 @@ typedef	long word;		/* "word" used for optimal copy speed */
 #define	wsize	sizeof(word)
 #define	wmask	(wsize - 1)
 
-#ifdef MEMCOPY
-void *
-memcpy(void *dst0, const void *src0, size_t length)
-#else
-#ifdef MEMMOVE
-void *
-memmove(void *dst0, const void *src0, size_t length)
-#else
 void
 bcopy(const void *src0, void *dst0, size_t length)
-#endif
-#endif
 {
 	char *dst = dst0;
 	const char *src = src0;
