@@ -184,6 +184,13 @@ int local_errno = 134; // ENOTSUP
 int*   __errno(void) {
     return &local_errno;
 }
+char *
+stpcpy (char *dst, const char *src)
+{
+  const size_t len = strlen (src);
+  return (char *) memcpy (dst, src, len + 1) + len;
+}
+
 wchar_t *
 wcschr(const wchar_t *s, wchar_t c)
 {

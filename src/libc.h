@@ -12,6 +12,7 @@ char*  strdup(const char *);
 char*  strncpy(char *, const char *, size_t);
 int atoi(const char *);
 size_t strlen(const char *);
+char *stpcpy (char *dst, const char *src);
 
 #define sprintf sprintf_
 int sprintf_(char* buffer, const char* format, ...);
