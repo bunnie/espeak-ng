@@ -68,7 +68,7 @@ void ffi_sanity() {
 	printf("hello world from C land!\n");
 }
 
-int espeak_ffi_setup(t_espeak_callback* SynthCallback) {
+int espeak_ffi_setup(t_espeak_callback* SynthCallback, int words_per_minute) {
 	int param;
 	int srate = 8000; // default sample rate 22050 Hz -- looks like a small "project" to modify to 8000Hz
 
@@ -95,7 +95,7 @@ int espeak_ffi_setup(t_espeak_callback* SynthCallback) {
 	for (param = 0; param < N_SPEECH_PARAM; param++)
 		param_stack[0].parameter[param] = saved_parameters[param] = ffi_param_defaults[param];
 
-	SetParameter(espeakRATE, espeakRATE_NORMAL, 0);
+	SetParameter(espeakRATE, words_per_minute, 0);
 	SetParameter(espeakVOLUME, 100, 0);
 	SetParameter(espeakCAPITALS, option_capitals, 0);
 	SetParameter(espeakPUNCTUATION, option_punctuation, 0);
