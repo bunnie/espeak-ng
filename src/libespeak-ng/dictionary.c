@@ -211,7 +211,7 @@ int LoadDictionary(Translator *tr, const char *name, int no_error)
 	int size;
 	char fname[sizeof(path_home)+20];
 
-#if 0
+#ifndef EMBEDDED
 	FILE *f;
 	if (dictionary_name != name)
 		strncpy(dictionary_name, name, 40); // currently loaded dictionary name
@@ -245,14 +245,17 @@ int LoadDictionary(Translator *tr, const char *name, int no_error)
 	size = fread(tr->data_dictlist, 1, size, f);
 	fclose(f);
 #else
-	printf("assigning en_dict\n");
+	(void) no_error;
+#ifdef FFI_DEBUG
+	printf("hard-coding en_dict\n");
+#endif
 	tr->data_dictlist = (char *) en_dict_data;
 	size = sizeof(en_dict_data);
 #endif
 	pw = (int *)(tr->data_dictlist);
 	length = Reverse4Bytes(pw[1]);
 
-	if (size <= (N_HASH_DICT + sizeof(int)*2)) {
+	if ((unsigned int) size <= (N_HASH_DICT + sizeof(int)*2)) {
 		printf("Empty _dict file: '%s\n", fname);
 		return 2;
 	}
@@ -277,7 +280,7 @@ int LoadDictionary(Translator *tr, const char *name, int no_error)
 		p++; // skip over the zero which terminates the list for this hash value
 	}
 
-	if ((tr->dict_min_size > 0) && (size < (unsigned int)tr->dict_min_size))
+	if ((tr->dict_min_size > 0) && ((unsigned int)size < (unsigned int)tr->dict_min_size))
 		printf("Full dictionary is not installed for '%s'\n", name);
 
 	return 0;
@@ -321,7 +324,7 @@ const char *EncodePhonemes(const char *p, char *outptr, int *bad_phoneme)
 		*bad_phoneme = 0;
 
 	// skip initial blanks
-	while ((uint8_t)*p < 0x80 && isspace(*p))
+	while ((uint8_t)*p < 0x80 && isspace((unsigned char)*p))
 		p++;
 
 	while (((c = *p) != 0) && !isspace(c)) {
@@ -430,7 +433,7 @@ void DecodePhonemes(const char *inptr, char *outptr)
 				mnem = mnem >> 8;
 			}
 			if (phcode == phonSWITCH) {
-				while (isalpha(*inptr))
+				while (isalpha((unsigned char)*inptr))
 					*outptr++ = *inptr++;
 			}
 		}
@@ -2166,6 +2169,9 @@ static void MatchRule(Translator *tr, char *word[], char *word_start, int group_
 					DecodePhonemes(match.phonemes, decoded_phonemes);
 					fprintf(f_trans, "%3d\t%s [%s]\n", pts, DecodeRule(group_chars, group_length, rule_start, word_flags), decoded_phonemes);
 				}
+#else
+				(void) group_chars;
+				(void) rule_start;
 #endif
 			}
 		}
@@ -2799,6 +2805,9 @@ static const char *LookupDict2(Translator *tr, const char *word, const char *wor
 				print_dictionary_flags(flags, dict_flags_buf, sizeof(dict_flags_buf));
 				fprintf(f_trans, "Flags:  %s  %s\n", word1, dict_flags_buf);
 			}
+#else
+			(void) dict_flags_buf;
+			(void) word1;
 #endif
 			return 0; // no phoneme translation found here, only flags. So use rules
 		}
@@ -2831,6 +2840,8 @@ static const char *LookupDict2(Translator *tr, const char *word, const char *wor
 				print_dictionary_flags(flags, dict_flags_buf, sizeof(dict_flags_buf));
 				fprintf(f_trans, "' [%s]  %s\n", ph_decoded, dict_flags_buf);
 			}
+#else
+			(void) textmode;
 #endif
 		}
 

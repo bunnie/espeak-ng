@@ -215,12 +215,15 @@ int isspace2(unsigned int c)
 
 void DeleteTranslator(Translator *tr)
 {
-	/*
+#ifdef EMBEDDED
+	(void) tr;
+#else
 	if (!tr) return;
 
 	if (tr->data_dictlist != NULL)
 		free(tr->data_dictlist);
-	free(tr);*/
+	free(tr);
+#endif
 }
 
 int lookupwchar(const unsigned short *list, int c)
@@ -1140,8 +1143,8 @@ int TranslateWord(Translator *tr, char *word_start, WORD_TAB *wtab, char *word_o
 
 			// skip to the next word in a multi-word replacement. Always skip at least one word.
 			for (dictionary_skipwords++; dictionary_skipwords > 0; dictionary_skipwords--) {
-				while (!isspace(*word_out)) ++word_out;
-				while (isspace(*word_out))  ++word_out;
+				while (!isspace((unsigned char)*word_out)) ++word_out;
+				while (isspace((unsigned char)*word_out))  ++word_out;
 			}
 		}
 

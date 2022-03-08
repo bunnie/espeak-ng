@@ -91,7 +91,7 @@ vsscanf(const char *inp, char const *fmt0, va_list ap)
 		if (c == 0)
 			return (nassigned);
 		if (isspace(c)) {
-			while (inr > 0 && isspace(*inp))
+			while (inr > 0 && isspace((unsigned char)*inp))
 				nread++, inr--, inp++;
 			continue;
 		}
@@ -208,11 +208,11 @@ literal:
 		 * that suppress this.
 		 */
 		if ((flags & NOSKIP) == 0) {
-			while (isspace(*inp)) {
+			while (isspace((unsigned char)*inp)) {
 				nread++;
 				if (--inr > 0)
 					inp++;
-				else 
+				else
 					goto input_failure;
 			}
 			/*
@@ -307,7 +307,7 @@ literal:
 				width = (size_t)~0;
 			if (flags & SUPPRESS) {
 				n = 0;
-				while (!isspace(*inp)) {
+				while (!isspace((unsigned char)*inp)) {
 					n++, inr--, inp++;
 					if (--width == 0)
 						break;
@@ -317,7 +317,7 @@ literal:
 				nread += n;
 			} else {
 				p0 = p = va_arg(ap, char *);
-				while (!isspace(*inp)) {
+				while (!isspace((unsigned char)*inp)) {
 					inr--;
 					*p++ = *inp++;
 					if (--width == 0)

@@ -244,7 +244,7 @@ static char *fgets_strip(char *buf, int size)
 	}
 
 	len = strlen(buf);
-	while ((--len > 0) && isspace(buf[len]))
+	while ((--len > 0) && isspace((unsigned char)buf[len]))
 		buf[len] = 0;
 
 	if ((p = strstr(buf, "//")) != NULL)
@@ -542,7 +542,7 @@ static void ReadNumbers(char *p, int *flags, int maxValue,  MNEM_TAB *keyword_ta
 	// give an error if number > maxValue is read
 	int n;
 	while (*p != 0) {
-		while (isspace(*p)) p++;
+		while (isspace((unsigned char)*p)) p++;
 		if ((n = atoi(p)) > 0) {
 			p++;
 			if (n < maxValue) {
@@ -551,7 +551,7 @@ static void ReadNumbers(char *p, int *flags, int maxValue,  MNEM_TAB *keyword_ta
 				printf("%s: Bad option number %d\n", LookupMnemName(keyword_tab, key), n);
 			}
 		}
-	while (isalnum(*p)) p++;
+	while (isalnum((unsigned char)*p)) p++;
 	}
 }
 
@@ -669,8 +669,11 @@ voice_t *LoadVoice(const char *vname, int control)
 	}
 
 #else
+	(void) path_voices;
 	tone_only = false;
+#ifdef FFI_DEBUG
 	printf("bypass mode: '%s', %x\n", vname, control);
+#endif
 	strncpy0(voicename, "en", sizeof(voicename));
     language_type = "en";
 	strcpy(translator_name, language_type);
@@ -679,13 +682,14 @@ voice_t *LoadVoice(const char *vname, int control)
 	strcpy(voice_identifier, language_type);
 	SelectPhonemeTableName("en");
 	language_set = false;
+#ifdef FFI_DEBUG
 	printf("bypass mode preamble done\n");
-
 	if (translator != NULL) {
 		printf("tone_only: %d, translator: %s\n", tone_only, translator);
 	} else {
 		printf("tone_only: %d, translator: NULL\n", tone_only);
 	}
+#endif
 #endif
 	VoiceReset(tone_only);
 
@@ -697,7 +701,7 @@ voice_t *LoadVoice(const char *vname, int control)
 		//printf("buf: %s\n", buf);
 		//fflush(stdout);
 		// isolate the attribute name
-		for (p = buf; (*p != 0) && !isspace(*p); p++) ;
+		for (p = buf; (*p != 0) && !isspace((unsigned char)*p); p++) ;
 		*p++ = 0;
 
 		if (buf[0] == 0) continue;
@@ -743,17 +747,21 @@ voice_t *LoadVoice(const char *vname, int control)
 				strcpy(new_dictionary, language_type);
 				strcpy(phonemes_name, language_type);
 				SelectPhonemeTableName(phonemes_name);
+#ifdef FFI_DEBUG
 				printf("selecting translator: %s\n", translator_name);
+#endif
 				translator = SelectTranslator(translator_name);
 				strncpy0(voice->language_name, language_name, sizeof(voice->language_name));
 			} else {
+#ifdef FFI_DEBUG
 				printf("language_set is true, skipping language setting\n");
+#endif
 			}
 		}
 			break;
 		case V_NAME:
 			if (tone_only == 0) {
-				while (isspace(*p)) p++;
+				while (isspace((unsigned char)*p)) p++;
 				strncpy0(voice_name, p, sizeof(voice_name));
 			}
 			break;
@@ -878,7 +886,7 @@ voice_t *LoadVoice(const char *vname, int control)
 
 			// expect a list of numbers
 			while (*p != 0) {
-				while (isspace(*p)) p++;
+				while (isspace((unsigned char)*p)) p++;
 				if ((n = atoi(p)) > 0) {
 					p++;
 					if (n < 32) {
@@ -889,7 +897,7 @@ voice_t *LoadVoice(const char *vname, int control)
 						else
 							printf("numbers: Bad option number %d\n", n);					}
 				}
-				while (isalnum(*p)) p++;
+				while (isalnum((unsigned char)*p)) p++;
 			}
 			ProcessLanguageOptions(&(translator->langopts));
 
@@ -1126,7 +1134,7 @@ static int __cdecl VoiceNameSorter(const void *p1, const void *p2)
 		return ix;
 	return strcmp(v1->name, v2->name);
 }
-
+#ifndef EMBEDDED
 static int __cdecl VoiceScoreSorter(const void *p1, const void *p2)
 {
 	int ix;
@@ -1260,9 +1268,15 @@ static int ScoreVoice(espeak_VOICE *voice_spec, const char *spec_language, int s
 		score = 1;
 	return score;
 }
+#endif
 static int SetVoiceScores(espeak_VOICE *voice_select, espeak_VOICE **voices, int control)
 {
-#ifndef EMBEDDED
+#ifdef EMBEDDED
+	(void) voice_select;
+	(void) voices;
+	(void) control;
+	return 0;
+#else
 	// control: bit0=1  include mbrola voices
 	int ix;
 	int score;
@@ -1325,8 +1339,6 @@ static int SetVoiceScores(espeak_VOICE *voice_select, espeak_VOICE **voices, int
 	qsort(voices, nv, sizeof(espeak_VOICE *), (int(__cdecl *)(const void *, const void *))VoiceScoreSorter);
 
 	return nv;
-#else
-	return 0;
 #endif
 }
 espeak_VOICE *SelectVoiceByName(espeak_VOICE **voices, const char *name2)
@@ -1559,6 +1571,9 @@ static void GetVoices(const char *path, int len_path_voices, int is_language_fil
 	} while (FindNextFileA(hFind, &FindFileData) != 0);
 	FindClose(hFind);
 #else
+	(void) path;
+	(void) len_path_voices;
+	(void) is_language_file;
 	DIR *dir;
 	struct dirent *ent;
 
@@ -1638,7 +1653,9 @@ ESPEAK_NG_API espeak_ng_STATUS espeak_ng_SetVoiceByFile(const char *filename)
 	return ENS_VOICE_NOT_FOUND;
 }
 ESPEAK_NG_API espeak_ng_STATUS SetVoiceMinimal(void) {
+#ifdef FFI_DEBUG
 	printf("minimal set voice\n");
+#endif
 	char variant_name[] = "en";
 	espeak_VOICE voice_selector;
 
@@ -1649,7 +1666,9 @@ ESPEAK_NG_API espeak_ng_STATUS SetVoiceMinimal(void) {
 	DoVoiceChange(voice);
 	voice_selector.languages = voice->language_name;
 	SetVoiceStack(&voice_selector, variant_name);
+#ifdef FFI_DEBUG
 	printf("returning OK\n");
+#endif
 	return ENS_OK;
 }
 

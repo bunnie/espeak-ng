@@ -76,8 +76,6 @@ int espeak_ffi_setup(t_espeak_callback* SynthCallback) {
 	// to something other than the default "C".  Then, not only Latin1 but also the
 	// other characters give the correct results with iswalpha() etc.
     // setlocale(LC_CTYPE, "");
-	printf("hello world from C land!\n");
-
 	espeak_ng_STATUS result = LoadPhData(&srate, NULL);
 	if (result != ENS_OK) {
         return 0;
@@ -116,9 +114,20 @@ int espeak_ffi_setup(t_espeak_callback* SynthCallback) {
     /// setup voices
     char voicename[40];
     strcpy(voicename, "gmw/en");
+#ifdef FFI_DEBUG
     printf("default voice: %s\n", voicename);
+#endif
 
     return 1;
+}
+
+ESPEAK_API espeak_ERROR espeak_Synth(const void *text, size_t size,
+                                     unsigned int position,
+                                     espeak_POSITION_TYPE position_type,
+                                     unsigned int end_position, unsigned int flags,
+                                     unsigned int *unique_identifier, void *user_data)
+{
+	return status_to_espeak_error(espeak_ng_Synthesize(text, size, position, position_type, end_position, flags, unique_identifier, user_data));
 }
 
 // size includes trailing \0
@@ -129,13 +138,4 @@ espeak_ng_STATUS espeak_ffi_synth(char *text, unsigned int size, void *user_data
 
 espeak_ng_STATUS espeak_ffi_sync(void) {
     return espeak_ng_Synchronize();
-}
-
-ESPEAK_API espeak_ERROR espeak_Synth(const void *text, size_t size,
-                                     unsigned int position,
-                                     espeak_POSITION_TYPE position_type,
-                                     unsigned int end_position, unsigned int flags,
-                                     unsigned int *unique_identifier, void *user_data)
-{
-	return status_to_espeak_error(espeak_ng_Synthesize(text, size, position, position_type, end_position, flags, unique_identifier, user_data));
 }

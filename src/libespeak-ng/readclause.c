@@ -285,6 +285,7 @@ static const char *LookupCharName(Translator *tr, int c, int only)
 	return buf;
 }
 
+#ifndef EMBEDDED
 int Read4Bytes(FILE *f)
 {
 	// Read 4 bytes (least significant first) into a word
@@ -298,7 +299,7 @@ int Read4Bytes(FILE *f)
 	}
 	return acc;
 }
-
+#endif
 static int AnnouncePunctuation(Translator *tr, int c1, int *c2_ptr, char *output, int *bufix, int end_clause)
 {
 	// announce punctuation names

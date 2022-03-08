@@ -103,6 +103,10 @@ static espeak_ng_STATUS ReadPhFile(void **ptr, const char *fname, int *size, esp
 	if (size != NULL)
 		*size = length;
 #endif
+	(void) ptr;
+	(void) fname;
+	(void) size;
+	(void) context;
 	return ENS_OK;
 }
 
@@ -115,13 +119,13 @@ espeak_ng_STATUS LoadPhData(int *srate, espeak_ng_ERROR_CONTEXT *context)
 	int rate;
 	unsigned char *p;
 
-	espeak_ng_STATUS status;
 #ifdef EMBEDDED
 	tunes = (TUNE *) intonations_data;
 	length = sizeof(intonations_data);
 	wavefile_data = (unsigned char *)phondata_ptr;
 	n_tunes = length / sizeof(TUNE);
 #else
+	espeak_ng_STATUS status;
 	if ((status = ReadPhFile((void **)&phoneme_tab_data, "phontab", NULL, context)) != ENS_OK)
 		return status;
 	if ((status = ReadPhFile((void **)&phoneme_index, "phonindex", NULL, context)) != ENS_OK)
